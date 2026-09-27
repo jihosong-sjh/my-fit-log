@@ -78,12 +78,14 @@ test('routine creation and copy remain independent from later edits', async ({
   await expect(
     page.getByLabel('Squat 3세트 횟수', { exact: true }),
   ).toHaveValue('8');
+  await expect(page.getByTestId('draft-status')).toHaveText('저장됨');
   await page.goto('/routines');
   await page.getByRole('button', { name: '루틴 편집', exact: true }).click();
   await page.getByLabel('기본 세트', { exact: true }).fill('1');
   await page.getByRole('button', { name: '루틴 저장', exact: true }).click();
   await expect(page.getByText('루틴을 저장했어요')).toBeVisible();
   await page.goto(url);
+  await page.getByRole('button', { name: '기록 복구', exact: true }).click();
   await expect(
     page.getByLabel('Squat 3세트 횟수', { exact: true }),
   ).toHaveValue('8');

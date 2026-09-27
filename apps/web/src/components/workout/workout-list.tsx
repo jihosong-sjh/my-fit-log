@@ -1,4 +1,5 @@
 'use client';
+import { DraftBanner } from '@/components/workout/draft-banner';
 import { useState } from 'react';
 import Link from 'next/link';
 import { Dumbbell, Activity } from 'lucide-react';
@@ -22,6 +23,7 @@ export function WorkoutList({ history = false }: { history?: boolean }) {
   const cardioRows = history ? cardio.data : cardio.data?.slice(0, 5);
   return (
     <main id="main-content" className="page-content">
+      <DraftBanner />
       <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
         <h1>{history ? '운동 이력' : '운동'}</h1>
         <div className="flex flex-wrap gap-2">

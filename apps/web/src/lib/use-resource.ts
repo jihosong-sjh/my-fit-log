@@ -14,6 +14,8 @@ export function useResource<T>(path: string | null) {
   });
   return {
     data: query.data,
+    status:
+      query.error instanceof ApiClientError ? query.error.status : undefined,
     error: query.error ? errorMessage(query.error) : '',
     loading: query.isPending,
     reload: () => query.refetch(),

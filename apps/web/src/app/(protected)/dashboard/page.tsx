@@ -1,4 +1,5 @@
 'use client';
+import { DraftBanner } from '@/components/workout/draft-banner';
 import { useState } from 'react';
 import Link from 'next/link';
 import { Activity, Flame, Scale, Dumbbell } from 'lucide-react';
@@ -20,6 +21,7 @@ export default function DashboardPage() {
   );
   return (
     <main id="main-content" className="page-content">
+      <DraftBanner />
       <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="mb-2 text-muted-foreground">오늘도, 나의 속도로</p>

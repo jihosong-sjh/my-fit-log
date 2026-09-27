@@ -1,12 +1,21 @@
 'use client';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import Link from 'next/link';
+import { useUser } from '../auth-context';
+import { DraftController } from '@/lib/draft/engine';
+import { makeDraft, type WorkoutDraft } from '@/lib/draft/model';
+import {
+  draftStorage,
+  readDraft,
+  consumeFreshDraft,
+} from '@/lib/draft/storage';
+import { sendDraft } from '@/lib/draft/client';
 import { useRouter } from 'next/navigation';
 import { ArrowDown, ArrowUp, Copy, Plus, Trash2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import type {
   ExerciseOption,
   WorkoutRecord,
-  WorkoutPayload,
   WorkoutSetInput,
 } from '@myfit/types';
 import { Button } from '@myfit/ui/button';
@@ -29,41 +38,50 @@ function PreviousRecord({ exerciseId }: { exerciseId: string }) {
     </p>
   );
 }
-export function workoutPayload(record: WorkoutRecord): WorkoutPayload {
-  return {
-    baseRevision: record.revision,
-    mutationId: crypto.randomUUID(),
-    date: record.date,
-    status: record.status,
-    startedAt: record.startedAt,
-    endedAt: record.endedAt,
-    sourceRoutineId: record.sourceRoutineId,
-    memo: record.memo,
-    exercises: record.exercises.map((e) => ({
-      id: e.id,
-      exerciseId: e.exerciseId,
-      sets: e.sets.map((s) => ({
-        id: s.id,
-        weight: s.weight,
-        reps: s.reps,
-        rpe: s.rpe,
-        completed: s.completed,
-      })),
-    })),
-  };
-}
-function Editor({ initial }: { initial: WorkoutRecord }) {
+function Editor({ initial }: { initial: WorkoutDraft }) {
   const router = useRouter();
   const form = useRef<HTMLFormElement>(null);
-  const [draft, setDraft] = useState(initial);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  const [conflict, setConflict] = useState(false);
-  const [dirty, setDirty] = useState(false);
-  const change = (next: WorkoutRecord) => {
-    setDraft(next);
-    setDirty(true);
-  };
+  const [store] = useState(
+    () => new DraftController(initial, draftStorage, sendDraft, recordsChanged),
+  );
+  const state = useSyncExternalStore(
+    store.subscribe,
+    store.getSnapshot,
+    store.getSnapshot,
+  );
+  const draft = state.doc.payload;
+  const busy = state.saving;
+  const error = state.error;
+  const conflict = state.doc.syncState === 'CONFLICT';
+  const [deleting, setDeleting] = useState(false);
+  const [serverVersion, setServerVersion] = useState<WorkoutRecord>();
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void store.start();
+    }, 0);
+    const online = () => {
+      if (store.getSnapshot().doc.syncState !== 'CONFLICT') void store.retry();
+    };
+    const unload = (event: BeforeUnloadEvent) => {
+      const value = store.getSnapshot();
+      if (
+        store.isActive() &&
+        (value.doc.syncState !== 'SYNCED' || value.storageError)
+      ) {
+        event.preventDefault();
+        event.returnValue = '';
+      }
+    };
+    window.addEventListener('online', online);
+    window.addEventListener('beforeunload', unload);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('online', online);
+      window.removeEventListener('beforeunload', unload);
+      void store.stop();
+    };
+  }, [store]);
+  const change = (next: WorkoutRecord) => store.update(next);
   const setValue = (
     exerciseId: string,
     setId: string,
@@ -83,28 +101,21 @@ function Editor({ initial }: { initial: WorkoutRecord }) {
       ),
     });
   const save = async (next = draft) => {
-    if (busy || !form.current?.reportValidity()) return;
-    setBusy(true);
-    setError('');
-    setConflict(false);
-    try {
-      const saved = await api<WorkoutRecord>(`/workouts/${draft.id}`, {
-        method: 'PUT',
-        json: workoutPayload(next),
-      });
-      setDraft(saved);
-      setDirty(false);
-      recordsChanged();
+    if (!form.current?.reportValidity()) return;
+    if (next !== draft) store.update(next);
+    const saved = await store.sync();
+    if (saved)
       toast.success(
-        next.status === 'COMPLETED' ? '운동을 완료했어요' : '운동을 저장했어요',
+        store.getSnapshot().doc.payload.status === 'COMPLETED'
+          ? '운동을 완료했어요'
+          : '운동을 저장했어요',
       );
-    } catch (e) {
-      setError(errorMessage(e));
-      setConflict(e instanceof ApiClientError && e.status === 409);
-      toast.error(errorMessage(e));
-    } finally {
-      setBusy(false);
-    }
+    else
+      toast.error(
+        store.getSnapshot().storageError ||
+          store.getSnapshot().error ||
+          '저장하지 못했어요. 입력은 화면에 남아 있습니다.',
+      );
   };
   const addExercise = async (exercise: ExerciseOption) => {
     const previous = await api<{ sets: WorkoutSetInput[] } | null>(
@@ -133,6 +144,7 @@ function Editor({ initial }: { initial: WorkoutRecord }) {
       ],
     });
   };
+  if (!state.ready) return <LoadingState />;
   return (
     <form
       ref={form}
@@ -148,7 +160,7 @@ function Editor({ initial }: { initial: WorkoutRecord }) {
         }
       }}
     >
-      <fieldset disabled={busy} className="min-w-0 space-y-6">
+      <fieldset disabled={deleting} className="min-w-0 space-y-6">
         <div className="flex flex-wrap items-end gap-4">
           <div>
             <label htmlFor="record-date" className="mb-2 block text-sm">
@@ -162,7 +174,11 @@ function Editor({ initial }: { initial: WorkoutRecord }) {
             />
           </div>
           <span className="rounded-full bg-secondary px-3 py-2 text-secondary-foreground">
-            {draft.status === 'COMPLETED' ? '완료한 운동' : '작성 중'}
+            {draft.status === 'COMPLETED'
+              ? state.doc.syncState === 'SYNCED'
+                ? '완료한 운동'
+                : '완료 저장 대기'
+              : '작성 중'}
           </span>
           <span className="text-sm text-muted-foreground">
             {draft.totalSets}세트 · {draft.volume} kg
@@ -407,34 +423,158 @@ function Editor({ initial }: { initial: WorkoutRecord }) {
           />
         </div>
       </fieldset>
+      {state.storageError && (
+        <div className="rounded-xl border border-danger/30 p-4">
+          <p role="alert" className="text-danger">
+            {state.storageError}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            className="mt-3"
+            onClick={() => void store.retry()}
+          >
+            기기 저장 다시 시도
+          </Button>
+        </div>
+      )}
       {error && (
         <div className="rounded-xl border border-danger/30 p-4">
           <p role="alert" className="text-danger">
             {error}
           </p>
-          {conflict && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {!conflict && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void store.retry()}
+              >
+                다시 저장
+              </Button>
+            )}
+            {state.httpStatus === 401 && (
+              <Button asChild variant="outline">
+                <Link href="/login">다시 로그인</Link>
+              </Button>
+            )}
+            {conflict && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={async () => {
+                  try {
+                    setServerVersion(
+                      await api<WorkoutRecord>(`/workouts/${draft.id}`),
+                    );
+                  } catch (e) {
+                    toast.error(errorMessage(e));
+                  }
+                }}
+              >
+                서버 기록 비교
+              </Button>
+            )}
             <Button
               type="button"
-              variant="outline"
-              className="mt-3"
+              variant="ghost"
               onClick={async () => {
                 if (
-                  confirm('입력 중인 내용을 버리고 서버 기록을 불러올까요?')
+                  confirm('기기 입력을 폐기할까요? 서버 기록은 유지됩니다.')
                 ) {
-                  setDraft(await api<WorkoutRecord>(`/workouts/${draft.id}`));
-                  setDirty(false);
-                  setError('');
+                  try {
+                    await store.discard();
+                    router.push('/workout');
+                  } catch {
+                    toast.error('기기 기록을 지우지 못했어요.');
+                  }
                 }
               }}
             >
-              서버 기록 다시 불러오기
+              기기 입력만 폐기
             </Button>
-          )}
+          </div>
         </div>
       )}
+      {serverVersion && (
+        <Card className="border-warning/50 shadow-none">
+          <CardContent>
+            <h2 className="text-lg">서버 기록과 기기 입력 확인</h2>
+            <p className="mt-3">
+              서버: {serverVersion.date} ·{' '}
+              {serverVersion.exercises
+                .map(
+                  (e) =>
+                    `${e.exerciseNameSnapshot}: ${e.sets.map((s) => `${s.weight}kg × ${s.reps ?? '—'}`).join(', ')}`,
+                )
+                .join(' / ') || '종목 없음'}
+            </p>
+            <p className="mt-2 text-sm">
+              서버 메모: {serverVersion.memo ?? '없음'}
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              기기 입력은 위 편집 화면에 그대로 남아 있습니다. 자동으로 합치거나
+              덮어쓰지 않습니다.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={async () => {
+                  if (confirm('기기 입력을 버리고 서버 기록을 사용할까요?')) {
+                    await store.resolve(serverVersion, false);
+                    setServerVersion(undefined);
+                  }
+                }}
+              >
+                서버 기록 사용
+              </Button>
+              <Button
+                type="button"
+                onClick={async () => {
+                  if (
+                    confirm(
+                      '확인한 서버 기록을 현재 기기 입력으로 덮어써서 저장할까요?',
+                    )
+                  ) {
+                    await store.resolve(serverVersion, true);
+                    setServerVersion(undefined);
+                  }
+                }}
+              >
+                기기 입력으로 다시 저장
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setServerVersion(undefined)}
+              >
+                기기 입력 계속 확인
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 flex flex-wrap items-center gap-2 rounded-xl border bg-surface p-3 shadow-sm md:bottom-4">
-        <span className="mr-auto text-sm text-muted-foreground" role="status">
-          {busy ? '저장 중…' : dirty ? '저장하지 않은 변경사항' : '저장됨'}
+        <span
+          className="mr-auto text-sm text-muted-foreground"
+          role="status"
+          data-testid="draft-status"
+        >
+          {state.storageError
+            ? '기기 저장 실패'
+            : state.doc.syncState !== 'SYNCED' &&
+                state.persistedVersion !== state.doc.localVersion
+              ? '기기에 저장 중…'
+              : busy
+                ? '서버 저장 중…'
+                : state.doc.syncState === 'SYNCED'
+                  ? '저장됨'
+                  : state.doc.syncState === 'CONFLICT'
+                    ? '충돌 · 기기 입력 보존됨'
+                    : state.doc.syncState === 'FAILED'
+                      ? '저장 실패 · 기기 입력 보존됨'
+                      : '기기에 저장 · 서버 저장 대기'}
         </span>
         <Button type="submit" variant="outline" disabled={busy}>
           운동 저장
@@ -463,15 +603,38 @@ function Editor({ initial }: { initial: WorkoutRecord }) {
         disabled={busy}
         onClick={async () => {
           if (!confirm('이 운동과 모든 세트를 삭제할까요?')) return;
+          setDeleting(true);
           try {
-            await api(`/workouts/${draft.id}`, {
-              method: 'DELETE',
-              json: { baseRevision: draft.revision },
-            });
+            await store.stop();
+            let revision = store.getSnapshot().doc.baseRevision;
+            if (revision === null) {
+              try {
+                const remote = await api<
+                  WorkoutRecord & { lastMutationId: string }
+                >(`/workouts/${draft.id}`);
+                if (
+                  remote.lastMutationId !==
+                  store.getSnapshot().doc.pendingMutationId
+                )
+                  throw new ApiClientError(409, 'CONFLICT', 'Record changed');
+                revision = remote.revision;
+              } catch (e) {
+                if (!(e instanceof ApiClientError && e.status === 404)) throw e;
+              }
+            }
+            if (revision !== null)
+              await api(`/workouts/${draft.id}`, {
+                method: 'DELETE',
+                json: { baseRevision: revision },
+              });
+            await store.discard();
             recordsChanged();
             router.push('/workout/history');
           } catch (e) {
             toast.error(errorMessage(e));
+            void store.start();
+          } finally {
+            setDeleting(false);
           }
         }}
       >
@@ -481,17 +644,108 @@ function Editor({ initial }: { initial: WorkoutRecord }) {
   );
 }
 export function WorkoutEditor({ id }: { id: string }) {
-  const { data, error, loading, reload } = useResource<WorkoutRecord>(
-    `/workouts/${id}`,
-  );
+  const user = useUser()!;
+  const server = useResource<WorkoutRecord>(`/workouts/${id}`);
+  const [local, setLocal] = useState<WorkoutDraft | null>();
+  const [chosen, setChosen] = useState<WorkoutDraft>();
+  const [readError, setReadError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
+  useEffect(() => {
+    let active = true;
+    void readDraft(user.id, id).then(
+      (value) => {
+        if (!active) return;
+        setLocal(value);
+        setReadError('');
+        if (value && consumeFreshDraft(id)) setChosen(value);
+      },
+      (error) => {
+        if (active)
+          setReadError(
+            error instanceof Error
+              ? error.message
+              : '기기 기록을 읽지 못했어요.',
+          );
+      },
+    );
+    return () => {
+      active = false;
+    };
+  }, [user.id, id, reloadKey]);
+  const discard = async () => {
+    if (!confirm('기기의 임시 입력을 폐기할까요? 서버 기록은 유지됩니다.'))
+      return;
+    try {
+      await draftStorage.remove(user.id, id);
+      routerToList();
+    } catch {
+      setReadError('기기 기록을 지우지 못했어요. 다시 시도해주세요.');
+    }
+  };
+  const router = useRouter();
+  const routerToList = () => router.push('/workout');
   return (
     <main id="main-content" className="page-content">
       <h1 className="mb-7">운동 기록</h1>
-      {error && <ErrorState message={error} retry={reload} />}{' '}
-      {!data && loading ? (
+      {readError ? (
+        <Card>
+          <CardContent>
+            <p role="alert" className="text-danger">
+              {readError}
+            </p>
+            <div className="mt-4 flex gap-2">
+              <Button onClick={() => setReloadKey(reloadKey + 1)}>
+                기기 기록 다시 읽기
+              </Button>
+              <Button variant="outline" onClick={() => void discard()}>
+                기기 기록 폐기
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : chosen ? (
+        <Editor initial={chosen} key={id} />
+      ) : local ? (
+        <Card className="border-brand/30">
+          <CardContent>
+            <h2>작성 중인 운동 기록이 있습니다</h2>
+            <p className="mt-3">
+              {local.payload.date} ·{' '}
+              {local.payload.exercises
+                .map((e) => e.exerciseNameSnapshot)
+                .join(', ') || '새 운동'}
+            </p>
+            <p className="mt-2 text-muted-foreground">
+              기기에 남아 있는 입력을 복구하시겠습니까? 서버에 저장되지 않은
+              입력도 유지되어 있습니다.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <Button
+                onClick={() =>
+                  setChosen(
+                    server.status === 404 && local.baseRevision !== null
+                      ? { ...local, syncState: 'CONFLICT' }
+                      : local,
+                  )
+                }
+              >
+                기록 복구
+              </Button>
+              <Button variant="outline" onClick={() => void discard()}>
+                기기 기록 폐기
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : local === undefined || server.loading ? (
         <LoadingState />
+      ) : server.data ? (
+        <Editor initial={makeDraft(user.id, server.data)} key={id} />
       ) : (
-        data && <Editor initial={data} key={data.id} />
+        <ErrorState
+          message={server.error || '운동 기록을 찾지 못했어요.'}
+          retry={server.reload}
+        />
       )}
     </main>
   );

@@ -1,5 +1,5 @@
 'use client';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@myfit/ui/button';
 import { QuickAdd } from './quick-add';
+import { confirmDraftLogout, discardAccountDrafts } from '@/lib/draft/client';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -93,6 +94,7 @@ function ThemeMenu() {
 }
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const [loggingOut, setLoggingOut] = useState(false);
   const queryClient = useQueryClient();
   const user = useUser();
   const router = useRouter();
@@ -165,14 +167,27 @@ export function AppShell({ children }: { children: ReactNode }) {
             {user && (
               <Button
                 variant="ghost"
+                disabled={loggingOut}
                 onClick={async () => {
+                  if (loggingOut) return;
+                  setLoggingOut(true);
                   try {
+                    if (!(await confirmDraftLogout(user.id))) return;
                     await api('/auth/logout', { method: 'POST' });
+                    try {
+                      await discardAccountDrafts(user.id);
+                    } catch {
+                      toast.error(
+                        '로그아웃했지만 기기 기록을 지우지 못했어요. 이 계정의 기록으로만 보존됩니다.',
+                      );
+                    }
                     queryClient.clear();
                     router.replace('/login');
                     router.refresh();
                   } catch (error) {
                     toast.error(errorMessage(error));
+                  } finally {
+                    setLoggingOut(false);
                   }
                 }}
               >

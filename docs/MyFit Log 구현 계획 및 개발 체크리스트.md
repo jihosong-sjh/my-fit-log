@@ -21,7 +21,7 @@
 
 ## 실행 기록
 
-2026-09-27: Phase 0~13 완료. Phase 14~15 진행 중이며 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
+2026-09-27: Phase 0~14 완료. Phase 15 진행 중이며 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
 
 ## 작업 구간과 완료 상태
 
@@ -1080,10 +1080,10 @@ Workout UX에서 매우 중요.
 
 ### Local Draft
 
-- [ ] IndexedDB 설정
-- [ ] 현재 Workout 임시 저장
-- [ ] Set 수정 시 즉시 저장
-- [ ] Exercise 추가 시 저장
+- [x] IndexedDB 설정
+- [x] 현재 Workout 임시 저장
+- [x] Set 수정 시 즉시 저장
+- [x] Exercise 추가 시 저장
 
 ---
 
@@ -1097,9 +1097,9 @@ Browser 종료 후:
 계속하시겠습니까?
 ```
 
-- [ ] Draft 탐지
-- [ ] 복구 버튼
-- [ ] 폐기 버튼
+- [x] Draft 탐지
+- [x] 복구 버튼
+- [x] 폐기 버튼
 
 ---
 
@@ -1121,20 +1121,20 @@ Success
 Synced
 ```
 
-- [ ] Retry
-- [ ] Saving 상태
-- [ ] Saved 상태
-- [ ] Failed 상태
+- [x] Retry
+- [x] Saving 상태
+- [x] Saved 상태
+- [x] Failed 상태
 
 ### 추가 완료 조건
 
-- [ ] 데이터 모델의 IndexedDB schemaVersion·계정 격리·revision·mutationId 계약 적용
-- [ ] 응답 유실 후 재시도 시 운동·세트 중복 없음
-- [ ] 전송 중 후속 편집을 응답 처리로 덮어쓰지 않음
-- [ ] 401 / 404 / 409 처리, 충돌 시 로컬 입력 보존
-- [ ] 로그아웃 시 미동기화 안내와 계정별 정리
-- [ ] IndexedDB 실패·브라우저 재시작·완료 요청 재시도 테스트
-- [ ] 작성 중 보존·재시도와 범용 오프라인 동기화의 범위 구분
+- [x] 데이터 모델의 IndexedDB schemaVersion·계정 격리·revision·mutationId 계약 적용
+- [x] 응답 유실 후 재시도 시 운동·세트 중복 없음
+- [x] 전송 중 후속 편집을 응답 처리로 덮어쓰지 않음
+- [x] 401 / 404 / 409 처리, 충돌 시 로컬 입력 보존
+- [x] 로그아웃 시 미동기화 안내와 계정별 정리
+- [x] IndexedDB 실패·브라우저 재시작·완료 요청 재시도 테스트
+- [x] 작성 중 보존·재시도와 범용 오프라인 동기화의 범위 구분
 
 ---
 

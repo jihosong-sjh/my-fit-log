@@ -120,3 +120,12 @@ pnpm sessions:prune
 `pnpm test:api`와 `pnpm test:web`는 실행 중인 격리 테스트 DB(5433/myfit_test)가 필요합니다.
 브라우저 검증은 전용 서버 3100/4100을 자동 기동·종료합니다. 테스트 계정은 생성 후 삭제합니다.
 `pnpm dev`는 호스트 Web/API, Docker의 개발 DB를 함께 사용합니다.
+
+## 운동 Draft
+
+운동 입력은 IndexedDB에 먼저 보존하고 약 800ms 후 서버에 동기화합니다.
+복구/폐기 안내, 연결 실패 재시도, 만료 후 재로그인, 동시 수정 비교를 제공합니다.
+완료 응답을 확인한 입력만 기기에서 정리합니다. 로그아웃 시 미동기화 입력을 확인하고 해당 계정의 Draft만 정리합니다.
+앱 전체 오프라인 실행과 자동 다중 기기 병합은 후속 범위입니다.
+
+`pnpm test:draft`는 동기화 엔진을, `pnpm test:web --grep 'draft|response loss|persistent-browser|in-flight|401 preserves|IndexedDB|logout warns'`는 실제 브라우저 저장·복구 흐름을 검증합니다.

@@ -1,6 +1,8 @@
 import type { WorkoutPayload, WorkoutRecord } from '@myfit/types';
 import { toPayload, type DraftStorage, type WorkoutDraft } from './model';
 export type DraftSnapshot = {
+  ready: boolean;
+  persistedVersion: number | null;
   doc: WorkoutDraft;
   saving: boolean;
   storageError: string;
@@ -32,6 +34,8 @@ export class DraftController {
     private readonly delay = 800,
   ) {
     this.state = {
+      ready: false,
+      persistedVersion: null,
       doc,
       saving: false,
       storageError: '',
@@ -43,6 +47,7 @@ export class DraftController {
     };
   }
   getSnapshot = () => this.state;
+  isActive = () => this.active;
   subscribe = (listener: () => void) => {
     this.listeners.add(listener);
     return () => {
@@ -62,7 +67,14 @@ export class DraftController {
     this.tail = task.catch(() => {});
     return task.then(
       () => {
-        if (this.active) this.patch({ storageError: '' });
+        if (this.active)
+          this.patch({
+            storageError: '',
+            persistedVersion: Math.max(
+              this.state.persistedVersion ?? -1,
+              value.localVersion,
+            ),
+          });
         return true;
       },
       () => {
@@ -71,10 +83,32 @@ export class DraftController {
       },
     );
   }
+  private removeVersion(version = this.state.doc.localVersion) {
+    const doc = this.state.doc;
+    const task = this.tail.then(async () => {
+      if (this.state.doc.localVersion === version)
+        await this.storage.remove(doc.userId, doc.workoutId);
+    });
+    this.tail = task.catch(() => {});
+    return task;
+  }
   async start() {
     this.active = true;
     this.generation++;
     controllers.add(this);
+    this.patch({ ready: true, saving: false });
+    if (
+      this.state.doc.syncState === 'SYNCED' &&
+      this.state.doc.payload.status === 'COMPLETED' &&
+      !this.state.doc.pendingPayload
+    ) {
+      try {
+        await this.removeVersion();
+      } catch {
+        this.patch({ storageError: STORAGE_ERROR });
+      }
+      return;
+    }
     const ok = await this.persist();
     if (
       ok &&
@@ -82,7 +116,11 @@ export class DraftController {
       this.state.doc.syncState !== 'SYNCED' &&
       this.state.doc.syncState !== 'CONFLICT'
     )
-      this.schedule(0);
+      if (this.flight)
+        void this.flight.finally(() => {
+          if (this.active) this.schedule(0);
+        });
+      else this.schedule(0);
   }
   async stop() {
     this.active = false;
@@ -195,11 +233,7 @@ export class DraftController {
         };
         this.document(next, { error: '', httpStatus: null });
         if (!changed && saved.status === 'COMPLETED') {
-          const cleanup = this.tail.then(async () => {
-            if (this.state.doc.localVersion === pendingVersion)
-              await this.storage.remove(doc.userId, doc.workoutId);
-          });
-          this.tail = cleanup.catch(() => {});
+          const cleanup = this.removeVersion(pendingVersion!);
           try {
             await cleanup;
             this.patch({ storageError: '' });
@@ -250,6 +284,13 @@ export class DraftController {
         };
         this.document(next, { error: message, httpStatus: status });
         await this.persist(next);
+        if (status === 400 && current.localVersion !== pendingVersion) {
+          this.document(
+            { ...this.state.doc, syncState: 'DIRTY' },
+            { error: '', httpStatus: null },
+          );
+          continue;
+        }
         return false;
       }
     }
@@ -262,10 +303,7 @@ export class DraftController {
     ) {
       try {
         await this.tail;
-        await this.storage.remove(
-          this.state.doc.userId,
-          this.state.doc.workoutId,
-        );
+        await this.removeVersion();
         this.patch({ storageError: '' });
         return true;
       } catch {

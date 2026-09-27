@@ -4,5 +4,6 @@ export default async function Page({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  return <WorkoutEditor id={(await params).id} />;
+  const { id } = await params;
+  return <WorkoutEditor id={id} key={id} />;
 }

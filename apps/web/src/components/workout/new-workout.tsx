@@ -1,16 +1,18 @@
 'use client';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { useUser } from '../auth-context';
+import { makeDraft } from '@/lib/draft/model';
+import { draftStorage, markFreshDraft } from '@/lib/draft/storage';
 import { useRouter } from 'next/navigation';
 import {
   localDate,
   type RoutineRecord,
-  type WorkoutPayload,
   type WorkoutRecord,
 } from '@myfit/types';
 import { Button } from '@myfit/ui/button';
 import { DatePicker } from '@myfit/ui/fields';
 import { Card, CardContent } from '@myfit/ui/card';
-import { api, errorMessage, recordsChanged } from '@/lib/api';
+import { errorMessage } from '@/lib/api';
 import { useResource } from '@/lib/use-resource';
 export function NewWorkout({
   routineId = '',
@@ -20,6 +22,8 @@ export function NewWorkout({
   initialDate?: string;
 }) {
   const router = useRouter();
+  const user = useUser()!;
+  const newId = useRef<string | null>(null);
   const { data: routines } = useResource<RoutineRecord[]>('/routines');
   const [routine, setRoutine] = useState(routineId);
   const [date, setDate] = useState(() => initialDate ?? localDate(new Date()));
@@ -45,20 +49,26 @@ export function NewWorkout({
             setBusy(true);
             setError('');
             try {
-              const id = crypto.randomUUID();
-              const payload: WorkoutPayload = {
-                baseRevision: null,
-                mutationId: crypto.randomUUID(),
+              const id = newId.current ?? crypto.randomUUID();
+              newId.current = id;
+              const record: WorkoutRecord = {
+                id,
+                revision: 0,
                 date,
                 startedAt: new Date().toISOString(),
                 endedAt: null,
+                durationSeconds: null,
                 status: 'IN_PROGRESS',
                 sourceRoutineId: source?.id ?? null,
                 memo: null,
+                totalSets: 0,
+                volume: '0',
                 exercises:
-                  source?.exercises.map((e) => ({
+                  source?.exercises.map((e, order) => ({
                     id: crypto.randomUUID(),
                     exerciseId: e.exerciseId,
+                    exerciseNameSnapshot: e.exercise.name,
+                    order,
                     sets: Array.from({ length: e.defaultSets }, () => ({
                       id: crypto.randomUUID(),
                       weight: '0',
@@ -68,14 +78,15 @@ export function NewWorkout({
                     })),
                   })) ?? [],
               };
-              await api<WorkoutRecord>(`/workouts/${id}`, {
-                method: 'PUT',
-                json: payload,
-              });
-              recordsChanged();
+              await draftStorage.put(makeDraft(user.id, record));
+              markFreshDraft(id);
               router.push(`/workout/${id}`);
             } catch (error) {
-              setError(errorMessage(error));
+              setError(
+                error instanceof Error && !('status' in error)
+                  ? '운동을 기기에 임시 저장하지 못했어요. 저장 권한을 확인하고 다시 시도해주세요.'
+                  : errorMessage(error),
+              );
             } finally {
               setBusy(false);
             }
