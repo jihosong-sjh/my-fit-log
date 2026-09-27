@@ -12,11 +12,17 @@ import { DatePicker } from '@myfit/ui/fields';
 import { Card, CardContent } from '@myfit/ui/card';
 import { api, errorMessage, recordsChanged } from '@/lib/api';
 import { useResource } from '@/lib/use-resource';
-export function NewWorkout({ routineId = '' }: { routineId?: string }) {
+export function NewWorkout({
+  routineId = '',
+  initialDate,
+}: {
+  routineId?: string;
+  initialDate?: string;
+}) {
   const router = useRouter();
   const { data: routines } = useResource<RoutineRecord[]>('/routines');
   const [routine, setRoutine] = useState(routineId);
-  const [date, setDate] = useState(() => localDate(new Date()));
+  const [date, setDate] = useState(() => initialDate ?? localDate(new Date()));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   return (

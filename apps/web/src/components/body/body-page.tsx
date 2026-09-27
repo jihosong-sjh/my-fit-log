@@ -120,10 +120,10 @@ function BodyForm({
     </form>
   );
 }
-export function BodyPage() {
+export function BodyPage({ initialDate }: { initialDate?: string } = {}) {
   const today = localDate(new Date());
-  const [date, setDate] = useState(today);
-  const [end, setEnd] = useState(today);
+  const [date, setDate] = useState(initialDate ?? today);
+  const [end, setEnd] = useState(initialDate ?? today);
   const [period, setPeriod] = useState<Period>('30D');
   const history = useResource<BodyHistory>(
     `/body?from=${periodStart(end, period)}&to=${end}`,

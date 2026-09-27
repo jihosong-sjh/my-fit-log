@@ -121,10 +121,12 @@
     outline: 2px solid var(--ring);
     outline-offset: 4px;
   }
-  input[type='date'] {
+  input[type='date'],
+  input[type='month'] {
     color-scheme: light;
   }
-  .dark input[type='date'] {
+  .dark input[type='date'],
+  .dark input[type='month'] {
     color-scheme: dark;
   }
   @media (prefers-reduced-motion: reduce) {

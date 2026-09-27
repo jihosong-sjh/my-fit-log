@@ -91,3 +91,27 @@ export type AnalyticsData = {
     }[];
   }[];
 };
+export type CalendarMonth = {
+  month: string;
+  days: {
+    date: string;
+    workout: boolean;
+    inProgress: boolean;
+    meal: boolean;
+    body: boolean;
+  }[];
+};
+export type CalendarDay = {
+  date: string;
+  workouts: WorkoutRecord[];
+  cardio: {
+    id: string;
+    exerciseNameSnapshot: string;
+    durationSeconds: number;
+    distanceKm: string | null;
+    repetitions: number | null;
+  }[];
+  meals: import('./meal').MealRecord[];
+  nutrition: { recorded: boolean; totals: Nutrition };
+  body: BodyRecord | null;
+};

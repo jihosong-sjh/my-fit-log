@@ -663,7 +663,7 @@ Last Workout
 - [x] 거리 입력 시 pace 계산, 거리 없음 처리
 - [x] 줄넘기 시간·횟수 기록과 이력 수정·삭제, 거리·pace 요구 없음
 - [ ] Quick Add에서 유산소 입력 연결 (Phase 13 연동 대기)
-- [ ] Dashboard 운동시간·주간 운동일·Analytics·Calendar에 반영 (Dashboard·Analytics 완료, Phase 12 Calendar 연동 대기)
+- [x] Dashboard 운동시간·주간 운동일·Analytics·Calendar에 반영
 
 ### 기록 보존과 완료 조건
 
@@ -1013,9 +1013,9 @@ Body
 
 기록 여부를 보여준다.
 
-- [ ] Workout indicator
-- [ ] Diet indicator
-- [ ] Weight indicator
+- [x] Workout indicator
+- [x] Diet indicator
+- [x] Weight indicator
 
 ---
 
@@ -1023,14 +1023,14 @@ Body
 
 표시:
 
-- [ ] Workout Summary
-- [ ] Nutrition Summary
-- [ ] Body Record
+- [x] Workout Summary
+- [x] Nutrition Summary
+- [x] Body Record
 
 ### 추가 완료 조건
 
-- [ ] 유산소도 운동 indicator에 포함, 진행 중 웨이트는 별도 표시
-- [ ] 월 경계·날짜별 상세 조회·빈 날짜 검증
+- [x] 유산소도 운동 indicator에 포함, 진행 중 웨이트는 별도 표시
+- [x] 월 경계·날짜별 상세 조회·빈 날짜 검증
 
 ---
 
