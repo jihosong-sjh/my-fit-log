@@ -21,7 +21,7 @@
 
 ## 실행 기록
 
-2026-09-27: Phase 0~5 완료. 후속 요청으로 Phase 15까지 같은 방식으로 진행한다. 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
+2026-09-27: Phase 0~5 완료, Phase 6 설정 저장 검증 완료(집계 화면 연동은 Phase 10~11에서 확인). 후속 요청으로 Phase 15까지 같은 방식으로 진행한다. 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
 
 ## 작업 구간과 완료 상태
 
@@ -504,30 +504,30 @@ Mobile:
 
 ### Profile
 
-- [ ] 이름
+- [x] 이름
 
 ### Goal
 
-- [ ] 목표 체중
-- [ ] 일일 Calories
-- [ ] Protein
-- [ ] Carbs
-- [ ] Fat
-- [ ] Weekly Workout
+- [x] 목표 체중
+- [x] 일일 Calories
+- [x] Protein
+- [x] Carbs
+- [x] Fat
+- [x] Weekly Workout
 
 ### App
 
-- [ ] Light
-- [ ] Dark
-- [ ] System
+- [x] Light
+- [x] Dark
+- [x] System
 
 ### 추가 완료 조건
 
-- [ ] User.name, UserGoal, UserPreference를 저장하는 조회·수정 API와 /settings 연결
-- [ ] 초기 목표 null, 미설정 안내, theme 기본 SYSTEM
-- [ ] weeklyWorkoutGoal은 주간 운동일 1~7로 검증
-- [ ] 현재 목표 변경 후 Dashboard·Analytics 캐시 갱신
-- [ ] 목표·설정이 새로고침과 재로그인 후 유지
+- [x] User.name, UserGoal, UserPreference를 저장하는 조회·수정 API와 /settings 연결
+- [x] 초기 목표 null, 미설정 안내, theme 기본 SYSTEM
+- [x] weeklyWorkoutGoal은 주간 운동일 1~7로 검증
+- [ ] 현재 목표 변경 후 Dashboard·Analytics 캐시 갱신 (공통 갱신 경로 구현, Phase 10~11에서 화면 연결 검증)
+- [x] 목표·설정이 새로고침과 재로그인 후 유지
 
 ---
 

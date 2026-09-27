@@ -11,6 +11,7 @@
   "dependencies": {
     "@myfit/types": "workspace:*",
     "@myfit/ui": "workspace:*",
+    "@tanstack/react-query": "5.90.21",
     "lucide-react": "1.48.0",
     "next": "16.3.6",
     "next-themes": "0.4.6",

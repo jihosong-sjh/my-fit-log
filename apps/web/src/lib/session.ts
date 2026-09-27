@@ -1,7 +1,12 @@
 import 'server-only';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-export type SessionUser = { id: string; email: string; name: string };
+export type SessionUser = {
+  id: string;
+  email: string;
+  name: string;
+  preference?: { theme: 'LIGHT' | 'DARK' | 'SYSTEM' };
+};
 export async function requireUser(): Promise<SessionUser> {
   const jar = await cookies();
   const response = await fetch(

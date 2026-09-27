@@ -1,5 +1,6 @@
 'use client';
 import type { ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useUser } from './auth-context';
@@ -88,6 +89,7 @@ function QuickAdd({ mobile = false }: { mobile?: boolean }) {
 }
 function ThemeMenu() {
   const { theme, setTheme } = useTheme();
+  const user = useUser();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -99,7 +101,23 @@ function ThemeMenu() {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>화면 테마</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+        <DropdownMenuRadioGroup
+          value={theme}
+          onValueChange={async (value) => {
+            setTheme(value);
+            if (user) {
+              try {
+                await api('/settings', {
+                  method: 'PATCH',
+                  json: { theme: value.toUpperCase() },
+                });
+              } catch (error) {
+                setTheme(theme ?? 'system');
+                toast.error(errorMessage(error));
+              }
+            }
+          }}
+        >
           <DropdownMenuRadioItem value="light">
             <Sun aria-hidden="true" />
             라이트
@@ -119,6 +137,7 @@ function ThemeMenu() {
 }
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const queryClient = useQueryClient();
   const user = useUser();
   const router = useRouter();
   return (
@@ -193,6 +212,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 onClick={async () => {
                   try {
                     await api('/auth/logout', { method: 'POST' });
+                    queryClient.clear();
                     router.replace('/login');
                     router.refresh();
                   } catch (error) {

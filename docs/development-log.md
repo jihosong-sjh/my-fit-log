@@ -60,3 +60,12 @@
 - `pnpm test:web`: 기존 기반 8개 통과. 인증 테스트의 alert 선택자를 Next route announcer와 구분하도록 수정 후 `--grep 'unauthorized redirect'` 재실행 통과(실패 입력 유지→로그인→refresh→logout→접근 차단).
 - 브라우저 테스트 서버 3100/4100과 myfit_test DB를 자동으로 기동/종료, 개발 DB와 분리. API dev/build 출력도 분리하여 watch와 검증 간 충돌 방지.
 - `pnpm lint`, `pnpm typecheck`, `pnpm build` 성공. Secure cookie는 production 설정에서 헤더 속성 검증; 실제 HTTPS/Tailscale은 Phase 24.
+
+## Phase 6 — Settings / Goals (2026-09-27)
+
+- `/api/v1/settings` 조회·부분 수정, `/settings` 이름/체중/열량/영양/주간 운동일/테마 저장. 빈 목표는 null, weeklyWorkoutGoal 1~7, Decimal 문자열 계약 적용.
+- Light/Dark/System 서버 저장과 로그인 시 복원. 헤더 테마 변경도 서버에 저장.
+- TanStack Query의 사용자별 query key, 로그아웃 시 cache clear, 저장 후 공통 invalidation을 구성. Dashboard/Analytics 실제 갱신 체크는 Phase 10~11까지 미완료 유지.
+- `pnpm test:api` 총 10개 통과: 초기 null, 부분 수정, theme 유지, 다른 계정 격리, 범위·타입·userId 주입 거부 포함.
+- 격리 브라우저 테스트 `settings persist` 통과: 이름/열량/주간 목표/다크 저장→reload→logout→login 후 유지, 초기 미설정 목표 빈칸.
+- `pnpm lint`, `pnpm typecheck`, `pnpm format:check` 통과. 이후 단계에서도 공통 조회·오류·loading 컴포넌트를 재사용한다.

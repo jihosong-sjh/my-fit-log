@@ -54,3 +54,41 @@ test('unauthorized redirect, login failure, refresh persistence and logout', asy
   await page.goto('/dashboard');
   await expect(page).toHaveURL(/login/);
 });
+
+test('settings persist across reload and login; unset goals stay blank', async ({
+  page,
+}) => {
+  await page.goto('/login');
+  await page.getByLabel('이메일', { exact: true }).fill(email);
+  await page.getByLabel('비밀번호', { exact: true }).fill(password);
+  await page.getByRole('button', { name: '로그인', exact: true }).click();
+  await expect(page).toHaveURL(/dashboard/);
+  await page.goto('/settings');
+  await expect(
+    page.getByLabel('일일 열량 (kcal)', { exact: true }),
+  ).toHaveValue('');
+  await page.getByLabel('이름', { exact: true }).fill('나의 기록');
+  await page.getByLabel('일일 열량 (kcal)', { exact: true }).fill('2200');
+  await page.getByLabel('주간 운동일 (1~7일)', { exact: true }).fill('4');
+  await page.getByLabel('화면 테마', { exact: true }).selectOption('DARK');
+  await page.getByRole('button', { name: '설정 저장', exact: true }).click();
+  await expect(page.getByText('설정을 저장했어요')).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByLabel('일일 열량 (kcal)', { exact: true }),
+  ).toHaveValue('2200');
+  await expect(page.locator('html')).toHaveClass(/dark/);
+  await page.getByRole('button', { name: '로그아웃', exact: true }).click();
+  await expect(page).toHaveURL(/login/);
+  await page.getByLabel('이메일', { exact: true }).fill(email);
+  await page.getByLabel('비밀번호', { exact: true }).fill(password);
+  await page.getByRole('button', { name: '로그인', exact: true }).click();
+  await expect(page).toHaveURL(/dashboard/);
+  await page.goto('/settings');
+  await expect(page.getByLabel('이름', { exact: true })).toHaveValue(
+    '나의 기록',
+  );
+  await expect(
+    page.getByLabel('주간 운동일 (1~7일)', { exact: true }),
+  ).toHaveValue('4');
+});

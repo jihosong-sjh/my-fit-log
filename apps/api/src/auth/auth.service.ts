@@ -14,7 +14,12 @@ export const passwordHash = (password: string) =>
     timeCost: 3,
     parallelism: 1,
   });
-export const publicUser = { id: true, email: true, name: true } as const;
+export const publicUser = {
+  id: true,
+  email: true,
+  name: true,
+  preference: { select: { theme: true } },
+} as const;
 @Injectable()
 export class AuthService {
   private readonly dummy = passwordHash(randomBytes(32).toString('hex'));
