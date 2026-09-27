@@ -4,3 +4,4 @@ export * from './domain';
 export * from './workout';
 export * from './meal';
 export * from './body';
+export * from './statistics';

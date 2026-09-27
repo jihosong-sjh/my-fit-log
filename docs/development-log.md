@@ -113,3 +113,12 @@
 - `pnpm test:unit` 4개 통과(윤년 기간 처리 추가), `pnpm test:api` 총 20개 통과(부분 갱신/null/소유권/유효성/평균 경계/빈 기간/삭제 추가).
 - 격리 390px 브라우저: 전체 신체 입력→Dashboard 체중만 갱신→선택 필드 유지→7D 차트·이력 확인. 가로 넘침 없음, 스크린샷 육안 확인.
 - lint/typecheck 통과. 차트는 표로도 조회할 수 있으며 자동 애니메이션을 사용하지 않는다.
+
+## Phase 10 — Dashboard 통합 (2026-09-27)
+
+- `/dashboard?date=` 단일 집계 API에서 today/nutrition/body/weekly/recentWorkout/goals 제공. 읽기 transaction은 RepeatableRead로 일관된 snapshot을 사용한다.
+- 운동·열량·단백질·현재 체중, 영양/운동일 목표, 최근 7일 체중/평균/직전 7일 비교, 주간 운동일/웨이트 횟수/시간/평균 영양/체중 변화와 최근 운동 연결.
+- 같은 날 웨이트+유산소는 운동일 1일, 미완료 웨이트/세트는 집계 제외, 영양 평균은 식사 기록일만, 현재 체중은 조회일 이하의 실제 측정일, 목표 미설정·빈 기록은 별도 안내.
+- `pnpm test:api` 총 21개 통과. 운동일 2일/웨이트 1회/2100초/640kg, 중복 식사 300kcal, 기록일 평균 200kcal, 200% 비율 유지, 체중 평균81/직전대비-9, 타 사용자 빈 결과 확인.
+- 격리 브라우저에서 Dashboard GET이 단일 데이터 API만 사용함을 확인. 설정 화면 저장 후 client navigation으로 돌아와 진행률 50% 재조회, 390px 넘침 없음·스크린샷 검토.
+- lint/typecheck 통과. Phase 6의 Analytics 갱신과 Phase 7의 Analytics/Calendar 연결 체크는 후속 단계까지 유지한다.

@@ -526,7 +526,7 @@ Mobile:
 - [x] User.name, UserGoal, UserPreference를 저장하는 조회·수정 API와 /settings 연결
 - [x] 초기 목표 null, 미설정 안내, theme 기본 SYSTEM
 - [x] weeklyWorkoutGoal은 주간 운동일 1~7로 검증
-- [ ] 현재 목표 변경 후 Dashboard·Analytics 캐시 갱신 (공통 갱신 경로 구현, Phase 10~11에서 화면 연결 검증)
+- [ ] 현재 목표 변경 후 Dashboard·Analytics 캐시 갱신 (Dashboard 갱신 검증 완료, Phase 11 Analytics 연동 대기)
 - [x] 목표·설정이 새로고침과 재로그인 후 유지
 
 ---
@@ -663,7 +663,7 @@ Last Workout
 - [x] 거리 입력 시 pace 계산, 거리 없음 처리
 - [x] 줄넘기 시간·횟수 기록과 이력 수정·삭제, 거리·pace 요구 없음
 - [ ] Quick Add에서 유산소 입력 연결 (Phase 13 연동 대기)
-- [ ] Dashboard 운동시간·주간 운동일·Analytics·Calendar에 반영 (최소 Dashboard 시간 반영 완료, Phase 10~12 확장 대기)
+- [ ] Dashboard 운동시간·주간 운동일·Analytics·Calendar에 반영 (Dashboard 시간·주간 운동일 완료, Phase 11~12 연동 대기)
 
 ### 기록 보존과 완료 조건
 
@@ -852,46 +852,46 @@ URL:
 
 Card:
 
-- [ ] Workout
-- [ ] Calories
-- [ ] Protein
-- [ ] Weight
+- [x] Workout
+- [x] Calories
+- [x] Protein
+- [x] Weight
 
 ---
 
 ### Goal Progress
 
-- [ ] Calories Progress
-- [ ] Protein Progress
-- [ ] Carb Progress
-- [ ] Fat Progress
-- [ ] Workout Progress
+- [x] Calories Progress
+- [x] Protein Progress
+- [x] Carb Progress
+- [x] Fat Progress
+- [x] Workout Progress
 
 ---
 
 ### Weight Trend
 
-- [ ] 최근 7일
-- [ ] 7일 평균
-- [ ] 이전 기간 대비 변화
+- [x] 최근 7일
+- [x] 7일 평균
+- [x] 이전 기간 대비 변화
 
 ---
 
 ### Weekly Summary
 
-- [ ] 주간 운동일 / 목표와 웨이트 완료 횟수 구분
-- [ ] 총 운동 시간
-- [ ] 평균 칼로리
-- [ ] 평균 단백질
-- [ ] 체중 변화
+- [x] 주간 운동일 / 목표와 웨이트 완료 횟수 구분
+- [x] 총 운동 시간
+- [x] 평균 칼로리
+- [x] 평균 단백질
+- [x] 체중 변화
 
 ---
 
 ### Recent Workout
 
-- [ ] 최근 Workout
-- [ ] 주요 Exercise
-- [ ] 총 운동시간
+- [x] 최근 Workout
+- [x] 주요 Exercise
+- [x] 총 운동시간
 
 ---
 
@@ -919,13 +919,13 @@ weekly
 recentWorkout
 ```
 
-- [ ] 단일 Aggregation API 구현
+- [x] 단일 Aggregation API 구현
 
 ### 추가 완료 조건
 
-- [ ] 운동·식단·신체·목표 변경 후 즉시 재조회/캐시 갱신
-- [ ] 유산소를 운동시간·운동일에 포함하고 같은 날 운동일 중복 집계 방지
-- [ ] 미설정 목표·빈 기록·현재 체중 측정일 표시
+- [x] 운동·식단·신체·목표 변경 후 즉시 재조회/캐시 갱신
+- [x] 유산소를 운동시간·운동일에 포함하고 같은 날 운동일 중복 집계 방지
+- [x] 미설정 목표·빈 기록·현재 체중 측정일 표시
 
 ---
 
