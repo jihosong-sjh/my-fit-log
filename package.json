@@ -27,15 +27,22 @@
     "test:unit": "tsx --test packages/types/src/*.test.ts",
     "test:db": "node --env-file=.env.development scripts/test-db.mjs",
     "test:api": "pnpm build:packages && pnpm --filter @myfit/api test",
-    "test:api:smoke": "node scripts/verify-api.mjs"
+    "test:api:smoke": "node scripts/verify-api.mjs",
+    "lint": "eslint .",
+    "test:web": "playwright test"
   },
   "devDependencies": {
+    "@eslint/js": "9.39.4",
     "@playwright/test": "1.58.2",
     "@types/node": "22.19.15",
     "dotenv": "17.3.1",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.3.6",
+    "pretendard": "1.3.9",
     "prettier": "3.8.2",
     "prisma": "7.10.0",
     "tsx": "4.21.0",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.57.0"
   }
 }

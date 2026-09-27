@@ -85,3 +85,21 @@ DB trigger는 카탈로그 소유권·유형·archive·snapshot·소유자 변�
 - `pnpm test:api:smoke`: 실행 중인 개발 DB를 잠시 중단하고 반드시 재시작하여 readiness 복구 확인
 
 인증 및 도메인 모듈은 경계만 마련했으며 실제 개인 기록 API는 Phase 5 이후 구현합니다.
+
+## UI / 브라우저 검증
+
+`http://localhost:3000/design-system`에서 공통 입력·모달·시트·탭·진행률·알림을 확인합니다.
+예제 값은 저장되지 않습니다. 디자인 토큰·배치는 [디자인 시스템](docs/design-system.md)에 정리했습니다.
+
+```sh
+pnpm exec playwright install chromium
+pnpm test:web
+pnpm lint
+pnpm typecheck
+pnpm format:check
+pnpm build
+```
+
+브라우저 테스트는 375/390/430/768/1024/1440px, Light/Dark/System,
+키보드 포커스·다이얼로그·시트·탭·입력·Toast를 검증합니다. 스크린샷은 `test-results`에 생성합니다.
+Pretendard와 shadcn/ui의 라이선스는 해당 소스 디렉터리에 보존했습니다.

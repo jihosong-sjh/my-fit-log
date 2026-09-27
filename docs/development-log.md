@@ -39,3 +39,14 @@
 - `pnpm test:api:smoke`에서 실제 개발 PostgreSQL 중단 시 live 200 / ready 503, DB 재시작 후 ready 200 및 Next 동일 origin API/OpenAPI 통신 확인.
 - `pnpm test:dev`의 실제 HMR/Nest watch 회귀 통과. `pnpm typecheck`, `pnpm build` 성공.
 - Swagger는 개발 환경에서 `http://localhost:3000/api/docs`, JSON은 `/api/docs-json`. 운영에서는 비활성화.
+
+## Phase 4 — Frontend / Design System (2026-09-27)
+
+- App Router/Strict TypeScript/Tailwind 4/shadcn·Radix, ESLint/Prettier, 공용 UI 패키지 구성. Pretendard variable은 로컬 파일로 제공하며 라이선스 보존.
+- PRD Light/Dark 색상, CSS 토큰, 글자 크기, desktop sidebar/header와 mobile header/bottom navigation/Quick Add 구성.
+- Button/Input/NumberInput/Card/Dialog/BottomSheet/Dropdown/Tabs/SearchInput/ProgressBar/ProgressCircle/StatCard/DatePicker/Toast/Skeleton/EmptyState 제공.
+- 실제 기능 전의 빈 화면과 `/design-system`의 명시적 데모를 구분. 테마 로컬 유지, 서버 사용자 설정 동기화는 Phase 6.
+- `pnpm test:web` 8개 통과. Chromium 375/390/430/768/1024/1440px의 가로 넘침·테마·내비게이션, Dialog focus trap/Escape/복귀, Sheet, 탭 방향키, 숫자 입력, 검색, Toast 검증. 각 폭 light/dark 스크린샷 생성 및 desktop/mobile 육안 확인.
+- 스크린샷 검토에서 Tailwind 공용 소스 경로 누락 발견·수정. 버튼 높이 44px 회귀 검증 추가.
+- 최신 Docker 이미지 재빌드 후 healthy, `pnpm test:dev` HMR·Nest reload와 `pnpm test:web` 재검증 통과. `pnpm typecheck`, `pnpm build`, `pnpm lint`, `pnpm format:check` 성공.
+- 실제 스마트폰 검증/성능은 Phase 28이며 이 기록은 로컬 Chromium 검증이다.

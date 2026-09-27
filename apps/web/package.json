@@ -9,15 +9,21 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@myfit/types": "workspace:*",
+    "@myfit/ui": "workspace:*",
+    "lucide-react": "1.48.0",
     "next": "16.3.6",
+    "next-themes": "0.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "@myfit/types": "workspace:*",
-    "@myfit/ui": "workspace:*"
+    "sonner": "2.0.8"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
+    "postcss": "8.5.8",
+    "tailwindcss": "4.3.3",
     "typescript": "5.9.3"
   }
 }

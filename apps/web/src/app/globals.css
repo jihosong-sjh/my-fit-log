@@ -1,0 +1,155 @@
+@import 'tailwindcss';
+@source '../../../../packages/ui/src';
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #f7f8fa;
+  --foreground: #111827;
+  --surface: #ffffff;
+  --primary: #111827;
+  --primary-foreground: #ffffff;
+  --secondary: #e9edff;
+  --secondary-foreground: #304bbb;
+  --muted: #eef0f4;
+  --muted-foreground: #667085;
+  --accent: #e9edff;
+  --accent-foreground: #304bbb;
+  --brand: #5b7cff;
+  --success: #16813e;
+  --warning: #996200;
+  --danger: #c92a37;
+  --destructive: #c92a37;
+  --border: #e4e7ec;
+  --input: #c8ced8;
+  --ring: #5b7cff;
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface);
+  --popover-foreground: var(--foreground);
+  --radius: 0.75rem;
+}
+.dark {
+  --background: #0f1115;
+  --foreground: #f9fafb;
+  --surface: #171a21;
+  --primary: #f9fafb;
+  --primary-foreground: #111827;
+  --secondary: #242e50;
+  --secondary-foreground: #b8c6ff;
+  --muted: #20242d;
+  --muted-foreground: #a5afbf;
+  --accent: #242e50;
+  --accent-foreground: #b8c6ff;
+  --brand: #8da3ff;
+  --success: #61d98b;
+  --warning: #efbd60;
+  --danger: #ff8590;
+  --destructive: #ed5261;
+  --border: #262a33;
+  --input: #454d5b;
+  --ring: #8da3ff;
+}
+@theme inline {
+  --font-sans: var(--font-pretendard), sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-brand: var(--brand);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-pretendard), sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  h1 {
+    font-size: clamp(1.75rem, 3vw, 2rem);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.035em;
+  }
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.02em;
+  }
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+  button,
+  input,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 4px;
+  }
+  input[type='date'] {
+    color-scheme: light;
+  }
+  .dark input[type='date'] {
+    color-scheme: dark;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+@utility caption {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+@utility page-content {
+  width: 100%;
+  max-width: 1400px;
+  margin-inline: auto;
+  padding: 2rem;
+}
+@media (max-width: 767px) {
+  .page-content {
+    padding: 1.5rem 1.25rem 7rem;
+  }
+}

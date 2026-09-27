@@ -21,7 +21,7 @@
 
 ## 실행 기록
 
-2026-09-27: Phase 0~3 완료. 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
+2026-09-27: Phase 0~4 완료. 후속 요청으로 Phase 15까지 같은 방식으로 진행한다. 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
 
 ## 작업 구간과 완료 상태
 
@@ -355,20 +355,20 @@ Base URL:
 
 ### Next.js 초기 설정
 
-- [ ] App Router
-- [ ] TypeScript Strict
-- [ ] Tailwind
-- [ ] shadcn/ui
-- [ ] ESLint
-- [ ] Prettier
+- [x] App Router
+- [x] TypeScript Strict
+- [x] Tailwind
+- [x] shadcn/ui
+- [x] ESLint
+- [x] Prettier
 
 ---
 
 ### Theme
 
-- [ ] Light Theme
-- [ ] Dark Theme
-- [ ] CSS Variable 구성
+- [x] Light Theme
+- [x] Dark Theme
+- [x] CSS Variable 구성
 
 Color Token:
 
@@ -396,32 +396,32 @@ border
 
 ### Typography
 
-- [ ] Pretendard 적용
-- [ ] Font scale 정의
-- [ ] Heading 정의
-- [ ] Body 정의
-- [ ] Caption 정의
+- [x] Pretendard 적용
+- [x] Font scale 정의
+- [x] Heading 정의
+- [x] Body 정의
+- [x] Caption 정의
 
 ---
 
 ### Core Components
 
-- [ ] Button
-- [ ] Input
-- [ ] NumberInput
-- [ ] Card
-- [ ] Dialog
-- [ ] BottomSheet
-- [ ] Dropdown
-- [ ] Tabs
-- [ ] SearchInput
-- [ ] ProgressBar
-- [ ] ProgressCircle
-- [ ] StatCard
-- [ ] DatePicker
-- [ ] Toast
-- [ ] Skeleton
-- [ ] EmptyState
+- [x] Button
+- [x] Input
+- [x] NumberInput
+- [x] Card
+- [x] Dialog
+- [x] BottomSheet
+- [x] Dropdown
+- [x] Tabs
+- [x] SearchInput
+- [x] ProgressBar
+- [x] ProgressCircle
+- [x] StatCard
+- [x] DatePicker
+- [x] Toast
+- [x] Skeleton
+- [x] EmptyState
 
 ---
 
@@ -429,15 +429,15 @@ border
 
 Desktop:
 
-- [ ] Sidebar
-- [ ] Header
-- [ ] Main Content
+- [x] Sidebar
+- [x] Header
+- [x] Main Content
 
 Mobile:
 
-- [ ] Bottom Navigation
-- [ ] Floating Quick Add Button
-- [ ] Mobile Header
+- [x] Bottom Navigation
+- [x] Floating Quick Add Button
+- [x] Mobile Header
 
 ---
 
@@ -445,12 +445,12 @@ Mobile:
 
 검증:
 
-- [ ] 375px
-- [ ] 390px
-- [ ] 430px
-- [ ] 768px
-- [ ] 1024px
-- [ ] 1440px
+- [x] 375px
+- [x] 390px
+- [x] 430px
+- [x] 768px
+- [x] 1024px
+- [x] 1440px
 
 ---
 
