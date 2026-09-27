@@ -88,3 +88,11 @@
 - 격리 Chromium 3개 흐름 통과: 390px 80kg×8→세트 복사/삭제→완료→Dashboard 640kg→reload 유지, 루틴 변경 후 기존 3세트 보존, 줄넘기 500→600회 수정 및 러닝 5km/25분 pace 확인.
 - 운동 모바일 스크린샷 육안 확인, 가로 넘침 없음. 최소 Dashboard와 첫 기록 흐름 완료.
 - `pnpm lint`, `pnpm typecheck`, `pnpm build` 통과. 전체 집계·Calendar·Quick Add 반영은 Phase 10~13 체크를 남겼으며 Draft 자동 저장은 Phase 14에서 구현한다.
+
+## Phase 8-A — 음식·식사·프리셋 API (2026-09-27)
+
+- Food CRUD/archive, 소유권, 즐겨찾기, 최근/빈도순 검색. Meal CRUD는 서버 snapshot과 servings를 사용하며 같은 일자/식사 구분 여러 건을 허용한다.
+- MealPreset CRUD/최신 영양 미리보기/원자적 적용. 보관된 항목이 있으면 전체 적용을 rollback한다. 기존 식사는 프리셋 변경·삭제와 독립적이다.
+- 식사 수정 시 기존 행을 직접 갱신해 archive 후에도 양 수정과 영양 snapshot 보존을 지원. 클라이언트 영양정보 주입과 마지막 음식 제거는 거부한다.
+- `pnpm test:api` 총 18개 통과. 음식 수치·계정 격리·즐겨찾기·빈도·중복 식사, 165×2=330→카탈로그 수정/보관 후 165×3=495, 프리셋 최신 365kcal/실패 rollback/과거 기록 보존 검증.
+- lint/typecheck 통과. 식단 화면은 다음 작업 단위에서 연결한다.
