@@ -74,3 +74,10 @@ test('Completed external-weight volume, unique workout days, snapshots and pace'
   assert.equal(pace(1500, '5'), '300');
   assert.equal(pace(60, null), null);
 });
+
+import { periodStart } from './domain';
+test('calendar month periods clamp leap day', () => {
+  assert.equal(periodStart('2024-02-29', '1Y'), '2023-02-28');
+  assert.equal(periodStart('2026-09-27', '3M'), '2026-06-27');
+  assert.throws(() => parseDate('0000-01-01'));
+});

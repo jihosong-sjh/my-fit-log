@@ -12,7 +12,7 @@ export const UNITS = {
 } as const;
 export type DecimalString = string;
 export function parseDate(value: string): Date {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value))
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || Number(value.slice(0, 4)) < 1)
     throw new Error('Expected YYYY-MM-DD');
   const date = new Date(`${value}T00:00:00.000Z`);
   if (
@@ -124,4 +124,20 @@ export function nutritionTotal(
       ),
     ]),
   ) as Record<(typeof keys)[number], string>;
+}
+export type Period = '7D' | '30D' | '3M' | '6M' | '1Y';
+export function periodStart(end: string, period: Period): string {
+  if (period === '7D' || period === '30D')
+    return addDays(end, period === '7D' ? -6 : -29);
+  const date = parseDate(end);
+  const day = date.getUTCDate();
+  date.setUTCDate(1);
+  date.setUTCMonth(
+    date.getUTCMonth() - (period === '3M' ? 3 : period === '6M' ? 6 : 12),
+  );
+  const last = new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0),
+  ).getUTCDate();
+  date.setUTCDate(Math.min(day, last));
+  return date.toISOString().slice(0, 10);
 }

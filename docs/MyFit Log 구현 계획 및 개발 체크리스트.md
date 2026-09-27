@@ -782,11 +782,11 @@ URL:
 
 ### 기록
 
-- [ ] Weight
-- [ ] Body Fat
-- [ ] Muscle Mass
-- [ ] Waist
-- [ ] Memo
+- [x] Weight
+- [x] Body Fat
+- [x] Muscle Mass
+- [x] Waist
+- [x] Memo
 
 ---
 
@@ -804,17 +804,17 @@ Dashboard에서도 가능하게 한다.
 
 ### Body History
 
-- [ ] 날짜별 기록
-- [ ] 수정
-- [ ] 삭제
+- [x] 날짜별 기록
+- [x] 수정
+- [x] 삭제
 
 ---
 
 ### Weight Chart
 
-- [ ] Daily Weight
-- [ ] 7-day Moving Average
-- [ ] 기간 선택
+- [x] Daily Weight
+- [x] 7-day Moving Average
+- [x] 기간 선택
 
 기간:
 
@@ -828,9 +828,9 @@ Dashboard에서도 가능하게 한다.
 
 ### 추가 완료 조건
 
-- [ ] 사용자·날짜당 1건, 당일 빠른 입력은 갱신
-- [ ] 체중만 수정해도 나머지 선택 필드 유지
-- [ ] 7일 평균은 달력일 기준, 미기록일 제외·빈 기간 null 처리
+- [x] 사용자·날짜당 1건, 당일 빠른 입력은 갱신
+- [x] 체중만 수정해도 나머지 선택 필드 유지
+- [x] 7일 평균은 달력일 기준, 미기록일 제외·빈 기간 null 처리
 
 ---
 

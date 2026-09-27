@@ -6,6 +6,7 @@ import { Button } from '@myfit/ui/button';
 import { Card, CardContent } from '@myfit/ui/card';
 import { EmptyState, StatCard } from '@myfit/ui/summary';
 import { useResource } from '@/lib/use-resource';
+import { QuickWeight } from '@/components/body/quick-weight';
 import { ErrorState, LoadingState } from '@/components/resource-state';
 type Dashboard = {
   date: string;
@@ -105,6 +106,11 @@ export default function DashboardPage() {
           </>
         )
       )}
+      <Card className="mt-7 max-w-xl shadow-none">
+        <CardContent>
+          <QuickWeight />
+        </CardContent>
+      </Card>
     </main>
   );
 }
