@@ -53,3 +53,41 @@ export type DashboardData = {
     };
   recentWorkout: WorkoutRecord[];
 };
+export type AnalyticsData = {
+  from: string;
+  to: string;
+  weight: {
+    start: string | null;
+    current: BodyRecord | null;
+    difference: string | null;
+    series: WeightPoint[];
+  };
+  workout: ActivityStats & {
+    weekly: ({ date: string } & ActivityStats)[];
+    exerciseTrends: {
+      exerciseId: string;
+      name: string;
+      points: { date: string; weight: string | null }[];
+    }[];
+  };
+  nutrition: NutritionStats & {
+    goals: Record<keyof Nutrition, string | null>;
+    goalAchievement: string | null;
+    series: ({ date: string } & Record<keyof Nutrition, string | null>)[];
+  };
+  cardio: {
+    exerciseId: string;
+    name: string;
+    mode: 'DISTANCE' | 'REPETITIONS' | 'DURATION';
+    durationSeconds: number;
+    distanceKm: string | null;
+    repetitions: number | null;
+    paceSecondsPerKm: string | null;
+    points: {
+      date: string;
+      durationSeconds: number | null;
+      distanceKm: string | null;
+      repetitions: number | null;
+    }[];
+  }[];
+};

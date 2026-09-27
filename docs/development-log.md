@@ -122,3 +122,12 @@
 - `pnpm test:api` 총 21개 통과. 운동일 2일/웨이트 1회/2100초/640kg, 중복 식사 300kcal, 기록일 평균 200kcal, 200% 비율 유지, 체중 평균81/직전대비-9, 타 사용자 빈 결과 확인.
 - 격리 브라우저에서 Dashboard GET이 단일 데이터 API만 사용함을 확인. 설정 화면 저장 후 client navigation으로 돌아와 진행률 50% 재조회, 390px 넘침 없음·스크린샷 검토.
 - lint/typecheck 통과. Phase 6의 Analytics 갱신과 Phase 7의 Analytics/Calendar 연결 체크는 후속 단계까지 유지한다.
+
+## Phase 11 — Analytics (2026-09-27)
+
+- 체중/7일 평균/시작·최근·변화, 주간 웨이트 횟수/운동시간/volume, 종목별 완료 세트 최대 중량, 영양 일별값/기록일 평균/현재 목표 달성률.
+- 유산소 종목별 시간·거리 또는 횟수 추세와 최근 기록. 기간 pace는 거리 있는 기록의 시간 합계÷거리 합계; 줄넘기에 거리/pace를 표시하지 않는다.
+- LineChart/BarChart/ResponsiveContainer/Tooltip/표/빈 상태, 7D~1Y 기간과 조회 기준일, 반올림은 표시 경계에서만 수행.
+- `pnpm test:api` 총 22개 통과. 완료 세트 최대 90kg/volume1090, 시간만 입력한 러닝을 pace에서 제외(300초/km), 줄넘기 같은 날 150회/90초, 미기록 null·평균/현재 목표200→100%·보관 이력·계정 격리 확인.
+- 격리 Chromium: 체중·웨이트·영양·유산소 차트, Settings 저장 후 Analytics 비율 40% 갱신, 줄넘기 거리/pace 미노출, 390px 가로 넘침·브라우저 오류 없음, 스크린샷 확인.
+- lint/typecheck 통과. Phase 6의 Dashboard/Analytics 캐시 갱신 체크 완료.

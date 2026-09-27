@@ -21,7 +21,7 @@
 
 ## 실행 기록
 
-2026-09-27: Phase 0~5 완료, Phase 6 설정 저장 검증 완료(집계 화면 연동은 Phase 10~11에서 확인). 후속 요청으로 Phase 15까지 같은 방식으로 진행한다. 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
+2026-09-27: Phase 0~6, 8~11 완료. Phase 7 기능 검증 완료, Calendar·Quick Add 연동은 Phase 12~13에서 확인한다. Phase 15까지 진행 중이며 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
 
 ## 작업 구간과 완료 상태
 
@@ -526,7 +526,7 @@ Mobile:
 - [x] User.name, UserGoal, UserPreference를 저장하는 조회·수정 API와 /settings 연결
 - [x] 초기 목표 null, 미설정 안내, theme 기본 SYSTEM
 - [x] weeklyWorkoutGoal은 주간 운동일 1~7로 검증
-- [ ] 현재 목표 변경 후 Dashboard·Analytics 캐시 갱신 (Dashboard 갱신 검증 완료, Phase 11 Analytics 연동 대기)
+- [x] 현재 목표 변경 후 Dashboard·Analytics 캐시 갱신
 - [x] 목표·설정이 새로고침과 재로그인 후 유지
 
 ---
@@ -663,7 +663,7 @@ Last Workout
 - [x] 거리 입력 시 pace 계산, 거리 없음 처리
 - [x] 줄넘기 시간·횟수 기록과 이력 수정·삭제, 거리·pace 요구 없음
 - [ ] Quick Add에서 유산소 입력 연결 (Phase 13 연동 대기)
-- [ ] Dashboard 운동시간·주간 운동일·Analytics·Calendar에 반영 (Dashboard 시간·주간 운동일 완료, Phase 11~12 연동 대기)
+- [ ] Dashboard 운동시간·주간 운동일·Analytics·Calendar에 반영 (Dashboard·Analytics 완료, Phase 12 Calendar 연동 대기)
 
 ### 기록 보존과 완료 조건
 
@@ -943,29 +943,29 @@ URL:
 
 ### Weight
 
-- [ ] 체중 Trend
-- [ ] 7 Day Average
-- [ ] Start Weight
-- [ ] Current Weight
-- [ ] Difference
+- [x] 체중 Trend
+- [x] 7 Day Average
+- [x] Start Weight
+- [x] Current Weight
+- [x] Difference
 
 ---
 
 ### Workout
 
-- [ ] Weekly Workout Count
-- [ ] Duration
-- [ ] Volume
-- [ ] Exercise별 Weight Trend
+- [x] Weekly Workout Count
+- [x] Duration
+- [x] Volume
+- [x] Exercise별 Weight Trend
 
 ---
 
 ### Nutrition
 
-- [ ] Daily Calories
-- [ ] Average Calories
-- [ ] Average Protein
-- [ ] Goal Achievement Rate
+- [x] Daily Calories
+- [x] Average Calories
+- [x] Average Protein
+- [x] Goal Achievement Rate
 
 ---
 
@@ -973,19 +973,19 @@ URL:
 
 Recharts 사용.
 
-- [ ] LineChart
-- [ ] BarChart
-- [ ] ResponsiveContainer
-- [ ] Tooltip
-- [ ] Empty State
-- [ ] Mobile 표시 검증
+- [x] LineChart
+- [x] BarChart
+- [x] ResponsiveContainer
+- [x] Tooltip
+- [x] Empty State
+- [x] Mobile 표시 검증
 
 ### 추가 완료 조건
 
-- [ ] 유산소 시간·거리 추세
-- [ ] 줄넘기 시간·횟수 및 종목별 이전 기록·기간별 추세
-- [ ] 누락 날짜·소수 합산·기간 경계는 데이터 모델 집계 규칙 준수
-- [ ] 목표 달성 비율은 현재 목표 기준이라고 표시; PR/1RM은 후속 범위
+- [x] 유산소 시간·거리 추세
+- [x] 줄넘기 시간·횟수 및 종목별 이전 기록·기간별 추세
+- [x] 누락 날짜·소수 합산·기간 경계는 데이터 모델 집계 규칙 준수
+- [x] 목표 달성 비율은 현재 목표 기준이라고 표시; PR/1RM은 후속 범위
 
 ---
 
