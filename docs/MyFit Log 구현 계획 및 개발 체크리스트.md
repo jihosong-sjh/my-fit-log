@@ -19,6 +19,10 @@
 
 공개 회원가입 대신 서버 관리 명령으로 개인 계정을 생성한다. 운동 Draft의 네트워크 재시도는 MVP이며, 앱 전체 오프라인 실행·다중 기기 자동 병합은 P2다.
 
+## 실행 기록
+
+2026-09-27: Phase 0 완료. 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
+
 ## 작업 구간과 완료 상태
 
 | 구간 | 수행 범위 | 담당 / 필요한 환경 |
@@ -79,13 +83,13 @@
 
 ### Repository
 
-- [ ] 기존 Git Repository와 main Branch 상태 확인
-- [ ] `.gitignore` 작성
-- [ ] `.editorconfig` 작성
-- [ ] README 생성
-- [ ] Node 버전 지정
-- [ ] pnpm 설치
-- [ ] pnpm workspace 구성
+- [x] 기존 Git Repository와 main Branch 상태 확인
+- [x] `.gitignore` 작성
+- [x] `.editorconfig` 작성
+- [x] README 생성
+- [x] Node 버전 지정
+- [x] pnpm 설치
+- [x] pnpm workspace 구성
 
 권장 구조:
 
@@ -118,14 +122,14 @@ myfit-log/
 
 ### 완료 조건
 
-- [ ] Root에서 dependency 설치 가능
-- [ ] Web/API 각각 실행 가능
-- [ ] Git clone 후 README만 보고 개발환경 구성 가능
+- [x] Root에서 dependency 설치 가능
+- [x] Web/API 각각 실행 가능
+- [x] Git clone 후 README만 보고 개발환경 구성 가능
 
 ### 추가 완료 조건
 
-- [ ] 기존 docs 이동 상태를 보존하고 개발·운영 명령을 README에 정리
-- [ ] 검증 가능한 Node/pnpm/패키지 버전과 lockfile 고정
+- [x] 기존 docs 이동 상태를 보존하고 개발·운영 명령을 README에 정리
+- [x] 검증 가능한 Node/pnpm/패키지 버전과 lockfile 고정
 
 ---
 
