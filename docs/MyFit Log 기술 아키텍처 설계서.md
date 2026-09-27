@@ -1,5 +1,9 @@
 # MyFit Log 기술 아키텍처 설계서
 
+정리 기준일: 2026-09-27. 제품 범위는 [PRD](<개인 운동·식단 관리 웹페이지 PRD.md>), 필드·관계·집계·Draft 규칙은 [데이터 모델](<MyFit Log 데이터 모델 명세.md>)을 따른다. 구현 번호는 [체크리스트](<MyFit Log 구현 계획 및 개발 체크리스트.md>)의 **Phase 0~29**만 사용한다. 본 문서의 1~86은 설명을 위한 장 번호다.
+
+Phase 0~22는 코드·로컬 검증·배포 준비, Phase 23~29는 실제 운영 적용·검증이다. 문서·스크립트 작성과 실제 장비 검증을 별도 완료 상태로 기록한다. [문서 안내](README.md)
+
 ## 1. 문서 목적
 
 본 문서는 개인 운동·식단 관리 웹 서비스 **MyFit Log**의 기술 아키텍처를 정의한다.
@@ -283,91 +287,55 @@ Routine
 
 # 6. API Module Architecture
 
-```text
-src
+`apps/api/src` 아래에 기능별 모듈을 둔다.
 
-├─ modules
-│
-├── auth
-│
-├── users
-│
-├── workouts
-│
-├── routines
-│
-├── exercises
-│
-├── meals
-│
-├── foods
-│
-├── body
-│
-├── goals
-│
-└── analytics
-│
-├─ common
-│
-├─ database
-│
-└─ health
+```text
+modules/
+  auth/          # Session, 로그인/로그아웃, 계정 관리 명령
+  users/         # 프로필
+  goals/         # 목표
+  settings/      # 사용자 테마
+  workouts/      # 웨이트 세션·종목·세트·Draft 동기화 계약
+  exercises/     # 웨이트·유산소 공통 카탈로그·즐겨찾기·최근 사용
+  routines/      # 웨이트 루틴
+  cardio/        # 유산소 기록
+  foods/         # 음식·즐겨찾기·최근 사용
+  meals/         # 식사·영양 snapshot·식단 프리셋
+  body/          # 날짜별 신체 기록
+  dashboard/     # 당일·주간 집계
+  analytics/     # 기간·종목별 통계
+  calendar/      # 날짜별 기록 상태
+common/
+database/
+health/
 ```
+
+모듈별 소유권 검사를 공통 인증 경계에 연결한다. 소규모 단일 DB이며 기능별 마이크로서비스로 나누지 않는다.
 
 ---
 
 # 7. REST API
 
-API Versioning 적용.
+API version prefix는 `/api/v1`이다. 세부 DTO는 데이터 모델 명세와 동일한 필드·단위·날짜 규칙을 사용한다.
 
-```text
-/api/v1
-```
+| 영역 | 경로 예시 | 주요 기능 |
+|---|---|---|
+| Auth | /auth/login, /auth/logout, /auth/me | DB 세션; 공개 /register 없음 |
+| User / Goal / Settings | /users/me, /goals, /settings | 조회·수정 |
+| Exercise | /exercises, /exercises/:id/favorite | STRENGTH/CARDIO 필터·검색·커스텀·즐겨찾기·최근 사용 |
+| Workout | /workouts, /workouts/:id | CRUD·완료·revision 기반 편집 |
+| Routine | /routines, /routines/:id/start | CRUD·새 세션 복사 |
+| Cardio | /cardio-records, /cardio-records/:id | CARDIO 종목 참조, 시간·거리/횟수 CRUD |
+| Food | /foods, /foods/:id/favorite | CRUD·archive·즐겨찾기·최근 사용 |
+| Meal / Preset | /meals, /meal-presets, /meal-presets/:id/apply | CRUD·프리셋 적용·영양 snapshot |
+| Body | /body-records | 날짜별 기록·부분 수정 |
+| Dashboard | /dashboard?date=YYYY-MM-DD | 단일 집계 응답 |
+| Analytics | /analytics/weight, /analytics/workouts, /analytics/cardio, /analytics/nutrition | 기간·종목별 추세 |
+| Calendar | /calendar?month=YYYY-MM | 날짜별 기록 상태 |
 
-예:
+API 응답은 성공 `{ "data": ... }`, 실패 `{ "error": { "code": "...", "message": "..." } }`로 통일한다. Health 경로 `/health/live`, `/health/ready`는 version prefix 밖의 내부 진단 경로다.
 
-```text
-GET    /api/v1/dashboard
-
-GET    /api/v1/workouts
-
-POST   /api/v1/workouts
-
-GET    /api/v1/workouts/:id
-
-PATCH  /api/v1/workouts/:id
-
-DELETE /api/v1/workouts/:id
-```
-
-Diet
-
-```text
-GET    /api/v1/meals
-
-POST   /api/v1/meals
-
-POST   /api/v1/foods
-```
-
-Body
-
-```text
-GET    /api/v1/body-records
-
-POST   /api/v1/body-records
-```
-
-Analytics
-
-```text
-GET /api/v1/analytics/weight
-
-GET /api/v1/analytics/workouts
-
-GET /api/v1/analytics/nutrition
-```
+생성 POST, 조회 GET, 수정 PATCH, 삭제 DELETE를 기본으로 한다. 카탈로그 삭제는 archive이며 기록 삭제와 구분한다. 운동 재시도·충돌의 401/404/409 처리와 멱등성 계약은 데이터 모델 9절을 따른다.
 
 ---
 
@@ -453,55 +421,24 @@ PostgreSQL
 
 ---
 
-# 10. Database 주요 Entity
+# 10. Database 모델
 
-```text
-User
+필드·관계의 단일 기준은 [데이터 모델 명세](<MyFit Log 데이터 모델 명세.md>)다. 이 문서에는 필드 정의를 중복하지 않는다.
 
-UserGoal
+| 영역 | 엔티티 |
+|---|---|
+| 계정·세션·설정 | User, Session, UserGoal, UserPreference |
+| 공통 운동 카탈로그 | Exercise, ExerciseFavorite |
+| 웨이트 | WorkoutSession, WorkoutExercise, WorkoutSet |
+| 루틴 | WorkoutRoutine, RoutineExercise |
+| 유산소 | CardioRecord |
+| 음식·식사 | Food, FoodFavorite, Meal, MealFood |
+| 식단 프리셋 | MealPreset, MealPresetFood |
+| 신체 | BodyRecord |
 
-WorkoutSession
+총 19개 엔티티다. 공용 Exercise에는 웨이트 13종과 러닝·줄넘기를 포함한 유산소 7종을 seed한다. trackingType에 따라 STRENGTH는 세트 입력, CARDIO는 시간·거리 또는 횟수 입력을 사용한다. CardioRecord도 Exercise를 참조하므로 검색·즐겨찾기·종목별 이력을 공유할 수 있다.
 
-WorkoutExercise
-
-WorkoutSet
-
-Exercise
-
-WorkoutRoutine
-
-RoutineExercise
-
-CardioRecord
-
-Meal
-
-MealFood
-
-Food
-
-BodyRecord
-```
-
-관계 예:
-
-```text
-User
-
- ├─ UserGoal
- │
- ├─ WorkoutSession
- │     │
- │     └─ WorkoutExercise
- │              │
- │              └─ WorkoutSet
- │
- ├─ Meal
- │     │
- │     └─ MealFood
- │
- └─ BodyRecord
-```
+최근 사용·Dashboard·Analytics·Calendar는 조회로 계산한다. Draft는 IndexedDB에 저장하며 서버의 WorkoutSession revision/mutationId로 중복 요청과 충돌을 처리한다.
 
 ---
 
@@ -681,112 +618,32 @@ MacBook
 
 # 16. Local Docker Compose
 
-개념적으로 다음 구조를 사용한다.
+repository root의 `compose.dev.yml`을 사용한다. 실제 Dockerfile·버전·명령은 Phase 0~1 구현 시 고정하고 검증한다.
 
-```yaml
-services:
+| 서비스 | Build / 실행 | 연결 |
+|---|---|---|
+| web | root build context, apps/web/Dockerfile, 개발 target | 127.0.0.1:3000, INTERNAL_API_URL=http://api:4000 |
+| api | root build context, apps/api/Dockerfile, 개발 target | 127.0.0.1:4000, DATABASE_URL의 host=db |
+| db | 고정된 PostgreSQL 버전 | 127.0.0.1:5432, 개발 전용 volume, pg_isready |
 
-  web:
-    build:
-      context: ./frontend
-
-    ports:
-      - "3000:3000"
-
-    environment:
-      INTERNAL_API_URL: http://api:4000
-
-    depends_on:
-      - api
-
-    networks:
-      - myfit-network
-
-
-  api:
-    build:
-      context: ./api
-
-    ports:
-      - "4000:4000"
-
-    environment:
-      DATABASE_URL: postgresql://myfit:password@db:5432/myfit
-
-    depends_on:
-      db:
-        condition: service_healthy
-
-    networks:
-      - myfit-network
-
-
-  db:
-    image: postgres
-
-    ports:
-      - "5432:5432"
-
-    environment:
-      POSTGRES_DB: myfit
-      POSTGRES_USER: myfit
-      POSTGRES_PASSWORD: password
-
-    volumes:
-      - postgres-dev-data:/var/lib/postgresql/data
-
-    healthcheck:
-      test:
-        - CMD-SHELL
-        - pg_isready -U myfit
-
-    networks:
-      - myfit-network
-
-
-volumes:
-  postgres-dev-data:
-
-
-networks:
-  myfit-network:
-```
-
-실제 비밀번호는 Compose 파일에 직접 작성하지 않고 `.env`로 관리한다.
+web/api는 workspace 공통 패키지와 소스를 mount하고 각각 HMR/watch를 사용한다. DB 준비 후 API가 시작하도록 health 조건을 둔다. 비밀번호는 Compose에 직접 작성하지 않는다. 개발·테스트·운영의 DB와 volume을 분리한다.
 
 ---
 
 # 17. Docker Compose 환경 분리
 
-파일 구조:
-
-```text
-infra
-
-├─ compose.dev.yml
-│
-└─ compose.prod.yml
-```
-
-또는
-
-```text
-docker-compose.yml
-
-docker-compose.override.yml
-
-docker-compose.prod.yml
-```
-
-권장 구조는 명확성을 위해:
+Compose 파일 위치는 repository root로 통일한다.
 
 ```text
 compose.dev.yml
-
 compose.prod.yml
+.env.example
+.env.production.example
+.env.development          # 실제 로컬 값, Git 제외
+.env.production           # 실제 운영 값, Git 제외
 ```
 
-사용.
+운영 이미지 리허설은 별도 Compose project·DB·volume·host port를 사용한다. `infra/`는 운영 스케줄 등 보조 설정을 보관하며 Compose를 중복 배치하지 않는다.
 
 ---
 
@@ -795,7 +652,7 @@ compose.prod.yml
 실행:
 
 ```text
-docker compose -f compose.dev.yml up -d
+docker compose --env-file .env.development -f compose.dev.yml up -d
 ```
 
 접속:
@@ -825,7 +682,7 @@ localhost:5432
 Frontend:
 
 ```text
-./frontend
+./apps/web
 
 ↓
 
@@ -835,7 +692,7 @@ Frontend:
 API:
 
 ```text
-./api
+./apps/api
 
 ↓
 
@@ -938,7 +795,7 @@ Tailscale
 
 사용을 기본으로 한다.
 
-Tailscale Serve는 tailnet 내부의 다른 기기에서 로컬 서비스를 HTTPS로 접근할 수 있도록 한다. citeturn736462search0
+Tailscale Serve는 tailnet 내부의 다른 기기에서 로컬 서비스를 HTTPS로 접근할 수 있도록 한다. [Tailscale Serve 문서](https://tailscale.com/docs/features/tailscale-serve)
 
 ---
 
@@ -1002,7 +859,7 @@ tailscale serve 3000
 https://<machine-name>.<tailnet>.ts.net
 ```
 
-형태의 HTTPS 주소를 사용할 수 있다. Tailscale Serve는 TLS 인증서를 자동으로 사용할 수 있으며 Tailnet ACL도 그대로 적용된다. citeturn736462search0turn736462search1
+형태의 HTTPS 주소를 사용할 수 있다. tailnet의 HTTPS 인증서 기능을 활성화하고 접근 제어 규칙을 확인한다. Serve는 tailnet 내 서비스 공유에 사용한다. [Tailscale Serve 문서](https://tailscale.com/docs/features/tailscale-serve)
 
 ---
 
@@ -1107,7 +964,7 @@ MacBook
 localhost:3000
 ```
 
-Cloudflare Tunnel 역시 MacBook에서 Cloudflare 방향으로 outbound 연결을 생성하기 때문에 공유기의 inbound port를 열 필요가 없다. Public hostname을 로컬 서비스에 매핑할 수 있다. citeturn879527search0turn879527search2
+Cloudflare Tunnel 역시 MacBook에서 Cloudflare 방향으로 outbound 연결을 생성하기 때문에 공유기의 inbound port를 열 필요가 없다. Public hostname을 로컬 서비스에 매핑할 수 있다. [Cloudflare Tunnel 문서](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/)
 
 예:
 
@@ -1177,21 +1034,13 @@ Tailscale을 사용하더라도 Application 인증을 별도로 둔다.
 
 Defense in Depth 구조다.
 
-초기에는
-
-```text
-Email
-
-+
-
-Password
-```
-
-로그인으로 충분하다.
+개인 계정은 서버 관리 명령으로 생성하고 이메일·비밀번호로 로그인한다. 공개 가입·이메일 인증·재설정 메일은 후속 범위다. 비밀번호를 관리 명령으로 재설정하면 기존 세션을 모두 폐기한다.
 
 ---
 
 # 30. 인증 방식
+
+DB Session에 tokenHash와 만료 시각을 저장한다. 원문 토큰은 cookie에만 전달하며 세션 만료·폐기·CSRF·rate limit·소유권 검사를 적용한다. 세부 계약은 데이터 모델 3절을 따른다.
 
 권장:
 
@@ -1403,7 +1252,7 @@ api
 db
 ```
 
-따라서 Container Process가 비정상 종료되더라도 Docker가 재시작한다.
+컨테이너 프로세스의 비정상 종료를 복구하도록 설정한다. 명시적인 docker stop은 수동 정지이므로 자동 재시작을 기대하는 crash 테스트와 구분한다. [Docker restart 정책](https://docs.docker.com/engine/containers/start-containers-automatically/)
 
 ---
 
@@ -1505,51 +1354,27 @@ Frontend Deployment
 
 # 40. 프로젝트 Repository 구조
 
-Monorepo 권장.
-
 ```text
-myfit-log
-
-├─ apps
-│
-├── web
-│
-└── api
-│
-├─ packages
-│
-├── ui
-│
-├── types
-│
-└── config
-│
-├─ prisma
-│
-├─ infra
-│
-├── compose.dev.yml
-│
-├── compose.prod.yml
-│
-└─ scripts
-│
-├── deploy.sh
-│
-├── backup.sh
-│
-└── restore.sh
-│
-├─ docs
-│
-├── PRD.md
-│
-└── ARCHITECTURE.md
-│
+my-fit-log/
+├─ apps/
+│  ├─ web/                 # Next.js, Dockerfile
+│  └─ api/                 # NestJS, Dockerfile
+├─ packages/
+│  ├─ types/               # DTO·공유 타입
+│  ├─ config/              # 공통 개발 설정
+│  └─ ui/                  # 공통 UI
+├─ prisma/                 # schema, migrations, seed
+├─ infra/                  # 백업 스케줄 등 운영 설정
+├─ scripts/                # deploy, backup, restore, 계정 관리
+├─ docs/
+├─ compose.dev.yml
+├─ compose.prod.yml
 ├─ .env.example
-│
+├─ .env.production.example
 └─ README.md
 ```
+
+workspace 공통 패키지와 Prisma 산출물이 각 서비스 build에 포함되도록 root build context를 사용한다.
 
 ---
 
@@ -1607,43 +1432,28 @@ API Schema와 Frontend Type 불일치를 최소화한다.
 
 # 43. 환경 변수
 
-개발:
+개발은 `.env.development`, 운영은 `.env.production`이며 실제 값은 Git에 저장하지 않는다. 예제 파일과 시작 전 검증 코드는 Phase 20, 실제 운영 값 확정·적용은 Phase 23이다.
 
-```text
-.env.development
-```
-
-운영:
-
-```text
-.env.production
-```
+Compose 실행 시 환경 파일을 `--env-file`로 명시한다. Compose 치환용 값과 각 서비스에 주입되는 environment를 구분하며, 비밀값을 브라우저 공개 환경변수로 전달하지 않는다.
 
 ---
 
 # 44. 주요 Environment Variable
 
-예:
+| 변수 | 소비자 | 값 / 정책 |
+|---|---|---|
+| POSTGRES_DB / POSTGRES_USER | db·관리 스크립트 | 환경별 DB·계정 이름 |
+| POSTGRES_PASSWORD | db·관리 스크립트 | 생성한 비밀값 |
+| DATABASE_URL | api·migration | 운영 DB 자격증명, Docker host=db |
+| SESSION_SECRET | api | 무작위 비밀값, 세션 token HMAC; 교체 시 기존 세션 무효화 |
+| APP_URL | web·api | 개발 http://localhost:3000, 운영 실제 Tailscale HTTPS origin |
+| INTERNAL_API_URL | web 서버 | http://api:4000, 브라우저에 공개하지 않음 |
+| NODE_ENV | web·api | development / production |
+| APP_TIMEZONE | api·집계 | MVP는 Asia/Seoul로 고정 |
+| BACKUP_DIR | 호스트 backup/restore | 실제 백업 파일 경로 |
+| BACKUP_RETENTION_DAYS | 호스트 backup | 기본 7 |
 
-```text
-DATABASE_URL
-
-SESSION_SECRET
-
-INTERNAL_API_URL
-
-APP_URL
-
-NODE_ENV
-```
-
-Cloudflare 사용 시:
-
-```text
-CLOUDFLARE_TUNNEL_TOKEN
-```
-
-등 추가.
+POSTGRES_PASSWORD와 DATABASE_URL의 비밀번호를 일치시키며 URL 인코딩을 처리한다. 운영 시작 전 누락·예제 비밀값·잘못된 URL을 검사한다. 후속 Cloudflare 공개 배포를 선택하기 전에는 CLOUDFLARE_TUNNEL_TOKEN을 요구하지 않는다.
 
 ---
 
@@ -1668,6 +1478,8 @@ API Secret
 
 .env.local
 
+.env.development
+
 .env.production
 ```
 
@@ -1675,9 +1487,10 @@ Repository에는
 
 ```text
 .env.example
+.env.production.example
 ```
 
-만 저장한다.
+처럼 비밀값 없는 예제만 저장한다.
 
 ---
 
@@ -1731,7 +1544,7 @@ Apple은 Mac 노트북에 전원 어댑터 연결 시
 
 **Prevent automatic sleeping on power adapter when the display is off**
 
-설정을 제공한다. 또한 Wake for network access 설정도 제공한다. citeturn236552search2turn236552search3
+설정을 제공한다. 또한 Wake for network access 설정도 제공한다. [Apple 잠자기 설정](https://support.apple.com/guide/mac-help/set-sleep-and-wake-settings-mchle41a6ccd/mac)
 
 따라서 기본 설정:
 
@@ -1780,7 +1593,7 @@ Lid Closed
 
 라는 점이 중요하다.
 
-Apple이 공식적으로 설명하는 Closed-Lid 사용 방식은 외부 디스플레이와 액세서리를 연결한 상태의 사용이다. Apple은 외부 디스플레이 연결 후 덮개를 닫고 계속 사용할 수 있다고 안내한다. citeturn236552search5turn236552search6
+Apple이 공식적으로 설명하는 Closed-Lid 사용 방식은 외부 디스플레이와 액세서리를 연결한 상태의 사용이다. Apple은 외부 디스플레이 연결 후 덮개를 닫고 계속 사용할 수 있다고 안내한다. [Apple 덮개 닫은 상태의 액세서리 연결](https://support.apple.com/en-us/102282)
 
 따라서 **상시 서버로 안정적으로 사용하려면 Closed-Lid 상태를 반드시 실제 장비에서 검증해야 한다.**
 
@@ -1788,7 +1601,7 @@ Apple이 공식적으로 설명하는 Closed-Lid 사용 방식은 외부 디스�
 
 # 50. 권장 Closed-Lid 구성
 
-가장 보수적인 구성:
+실제 장비에서 검증할 운영 구성 예시:
 
 ```text
 MacBook Pro
@@ -1805,7 +1618,7 @@ MacBook Pro
 
 HDMI Dummy Plug은 Mac 입장에서 외장 디스플레이가 연결된 상태로 인식시키는 용도로 활용할 수 있다.
 
-실제 외부 모니터를 계속 연결할 필요가 없다.
+Dummy Plug만으로 덮개 닫기·재부팅 복구가 보장된다고 간주하지 않는다. 사용 장비·macOS 조합에서 Phase 26 검증을 통과한 구성을 채택한다.
 
 ---
 
@@ -1867,7 +1680,7 @@ MyFit 정도의 개인 웹서비스는 CPU 지속 부하가 매우 낮을 것으
 
 # 53. Docker Desktop 자동 시작
 
-Docker Desktop에는 사용자 로그인 시 Docker Desktop을 자동으로 실행하는 설정이 있다. citeturn879527search13
+Docker Desktop에는 사용자 로그인 시 Docker Desktop을 자동으로 실행하는 설정이 있다. [Docker Desktop 시작 설정](https://docs.docker.com/desktop/settings-and-maintenance/settings/)
 
 활성화:
 
@@ -1935,7 +1748,7 @@ Docker Desktop은
 Start when you sign in
 ```
 
-방식이므로 완전히 사람이 없는 서버의 부팅 복구 관점에서는 일반 Linux Server보다 불리하다. citeturn879527search13
+방식이므로 완전히 사람이 없는 서버의 부팅 복구 관점에서는 일반 Linux Server보다 불리하다. [Docker Desktop 시작 설정](https://docs.docker.com/desktop/settings-and-maintenance/settings/)
 
 따라서 초기 개인용 서버로는 충분하지만,
 
@@ -1965,7 +1778,7 @@ VPS / Cloud
 
 # 56. Docker Resource Saver
 
-Docker Desktop에는 Container가 실행되지 않을 때 Linux VM 사용량을 줄이는 Resource Saver 기능이 있다. 기본적으로 실행 중인 Container가 없는 상태에서 VM을 정지시키는 방식이다. citeturn879527search11
+Docker Desktop에는 Container가 실행되지 않을 때 Linux VM 사용량을 줄이는 Resource Saver 기능이 있다. 기본적으로 실행 중인 Container가 없는 상태에서 VM을 정지시키는 방식이다. [Docker Resource Saver](https://docs.docker.com/desktop/use-desktop/resource-saver/)
 
 운영 중에는 항상
 
@@ -2021,22 +1834,22 @@ Health Check
 
 # 58. deploy.sh
 
-개념적인 배포 흐름:
+Phase 20에서 작성·격리 검증하고 Phase 24에서 실제 운영에 적용한다.
 
-```bash
-git pull
-
-docker compose -f compose.prod.yml build
-
-docker compose -f compose.prod.yml run --rm api \
-  npx prisma migrate deploy
-
-docker compose -f compose.prod.yml up -d
-
-docker compose -f compose.prod.yml ps
+```text
+운영 설정 검사
+→ 배포할 commit / image 식별
+→ production image build
+→ DB 기동·ready 확인
+→ 기존 DB backup (최초 빈 DB 설치는 별도 분기)
+→ prisma migrate deploy
+→ API / Web 기동
+→ health + 로그인/기록 smoke test
 ```
 
-운영에서는 Migration 전 DB Backup을 추가한다.
+backup·migration 실패 시 다음 단계를 중단한다. `.env.production`을 명시적으로 읽고 모든 명령의 DB·Compose project 대상을 일치시킨다. migration 실행에 필요한 Prisma 도구·파일을 이미지에 포함한다. 계정 관리 명령과 공용 운동 seed의 실행 시점을 문서화한다.
+
+이전 이미지와 migration 상태를 남긴다. 이미지 rollback과 DB restore는 별도 절차이며, 실패했다고 운영 DB를 자동으로 덮어쓰지 않는다. 실제 복구는 쓰기 중단·대상 확인·복원·검증 후 서비스 재개 순서다.
 
 ---
 
@@ -2160,60 +1973,38 @@ Sentry
 
 # 64. Analytics 데이터 처리
 
-Dashboard 요청마다 많은 Query를 발생시키지 않는다.
-
-예:
-
-```text
-/dashboard?date=2026-09-27
-```
-
-호출 시 API에서 한 번에 반환한다.
+`GET /api/v1/dashboard?date=YYYY-MM-DD` 한 번으로 당일·주간 데이터를 반환한다.
 
 ```json
 {
-  "workout": {},
-  "nutrition": {},
-  "body": {},
-  "weekly": {}
+  "data": {
+    "today": {},
+    "nutrition": {},
+    "body": {},
+    "weekly": {},
+    "recentWorkout": {}
+  }
 }
 ```
 
-Frontend가
-
-```text
-Workout API
-
-Diet API
-
-Body API
-
-Analytics API
-```
-
-4~5개를 동시에 호출하는 방식보다 Dashboard 전용 Aggregation API를 둔다.
+Frontend에서 Dashboard의 각 카드마다 별도 API를 호출하지 않는다. 운동·유산소·식단·신체·목표 변경 시 관련 Query cache를 무효화한다.
 
 ---
 
 # 65. Analytics 계산 전략
 
-초기에는 PostgreSQL에서 계산한다.
+PostgreSQL 조회와 API의 공통 계산 코드로 처리한다. 별도 Analytics Engine은 필요 없다. 정확한 식은 데이터 모델 8절을 따른다.
 
-예:
+- 날짜 Asia/Seoul, UTC timestamp 저장, 주간 월요일 시작
+- 완료 웨이트·완료 세트만 volume에 반영
+- 유산소 시간·거리/횟수와 웨이트 세션 수를 구분
+- 주간 운동일은 웨이트·유산소의 고유 날짜로 합산
+- 7일 체중 평균과 영양 평균은 미기록일을 0으로 넣지 않음
+- 영양 snapshot × servings를 Decimal로 합산
+- 과거 기간 목표 대비 비율도 현재 목표 기준임을 표시
+- 빈 데이터·미설정 목표는 null/Empty State로 처리
 
-```text
-7 Day Weight Average
-
-Weekly Calories
-
-Weekly Protein
-
-Workout Volume
-
-Workout Frequency
-```
-
-데이터량이 적기 때문에 별도 Analytics Engine은 필요 없다.
+줄넘기 시간·횟수와 러닝 시간·거리/pace를 각각 조회할 수 있어야 한다.
 
 ---
 
@@ -2283,7 +2074,7 @@ Responsive Web
 
 # 69. PWA 확장
 
-Phase 2:
+후속 릴리스(P2):
 
 ```text
 Web App Manifest
@@ -2704,7 +2495,7 @@ Cloudflare Tunnel
 
 지원.
 
-Cloudflare Tunnel은 public hostname을 로컬 서비스로 전달하면서 서버 측 inbound port를 열 필요가 없다. citeturn879527search0turn879527search2
+Cloudflare Tunnel은 public hostname을 로컬 서비스로 전달하면서 서버 측 inbound port를 열 필요가 없다. [Cloudflare Tunnel 문서](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/)
 
 ---
 
@@ -2809,119 +2600,23 @@ Microservices
 
 ---
 
-# 83. 구현 순서
+# 83. 구현 순서와 완료 경계
 
-## Phase 1 — Infrastructure
+독립적인 Phase 번호를 정의하지 않는다. [구현 체크리스트](<MyFit Log 구현 계획 및 개발 체크리스트.md>)의 번호를 그대로 따른다.
 
-```text
-Monorepo
+| Phase | 범위 |
+|---|---|
+| 0~5 | Repository·개발 Docker·DB·API·Frontend·인증 |
+| 6~9 | Settings·목표 → 웨이트/유산소·식단·신체 |
+| 10~15 | Dashboard·Analytics·Calendar·Quick Add·Draft·UX |
+| 16~18 | 보안·접근성·API/단위/통합·E2E·로컬 성능 |
+| 19~22 | 운영 이미지·로그·환경변수 계약·배포/복구 리허설·개발 완료 |
+| 23~25 | 실제 MacBook·운영 값·Tailscale·첫 배포·운영 백업/복구 검증 |
+| 26~29 | 덮개·재부팅·장애·운영 보안·실기기·실사용·MVP 완료 |
 
-↓
+Phase 22까지는 실제 운영 계정·장비가 없어도 개발용 실행 환경에서 수행할 수 있다. Phase 23부터 실제 주소·장비 접근·계정 인증이 필요하다. 물리 장비 조작과 1~2주 실사용은 운영자가 참여한다.
 
-Frontend Docker
-
-↓
-
-API Docker
-
-↓
-
-PostgreSQL Docker
-
-↓
-
-Docker Compose
-
-↓
-
-Prisma 연결
-```
-
----
-
-## Phase 2 — Authentication
-
-```text
-User
-
-Login
-
-Session
-
-Authentication Guard
-```
-
----
-
-## Phase 3 — Core Domain
-
-```text
-Workout
-
-Diet
-
-Body
-
-Goals
-```
-
----
-
-## Phase 4 — Dashboard
-
-```text
-Daily Summary
-
-Weekly Summary
-
-Weight Trend
-
-Nutrition Progress
-```
-
----
-
-## Phase 5 — Analytics
-
-```text
-Weight
-
-Workout Volume
-
-Workout Frequency
-
-Calories
-
-Protein
-```
-
----
-
-## Phase 6 — Production
-
-```text
-Production Docker
-
-↓
-
-Database Volume
-
-↓
-
-Backup
-
-↓
-
-Tailscale
-
-↓
-
-Mac Sleep 설정
-
-↓
-
-Closed Lid Test
-```
+개발 단계의 테스트 성공을 실제 덮개·외부 접속·무인 복구 성공으로 간주하지 않는다.
 
 ---
 

@@ -1,5 +1,9 @@
 # 개인 운동·식단 관리 웹페이지 PRD
 
+정리 기준일: 2026-09-27. **MVP 범위는 46~47절이 기준**이며 아래 화면 예시 중 후속 기능은 별도로 표시한다. P0와 P1을 모두 최종 MVP에 포함한다.
+
+문서 장 번호는 구현 Phase가 아니다. 구현 번호는 [체크리스트](<MyFit Log 구현 계획 및 개발 체크리스트.md>)의 **Phase 0~29**만 사용한다. 필드·관계·집계 규칙은 [데이터 모델](<MyFit Log 데이터 모델 명세.md>), 기술 선택은 [아키텍처](<MyFit Log 기술 아키텍처 설계서.md>), 문서 사용법은 [문서 안내](README.md)를 따른다.
+
 ## 1. 문서 개요
 
 ### 1.1 프로젝트명
@@ -195,31 +199,17 @@ Profile
 
 # 7. Today Progress
 
-하루의 목표 진행 상태를 시각화한다.
-
-### Example
+하루 영양 목표와 주간 운동일 목표를 표시한다.
 
 ```text
-Today's Goal
-
-Calories
-1850 / 2200 kcal
-██████████████░░░ 84%
-
-Protein
-132 / 160 g
-████████████░░░░░ 82%
-
-Workout
-65 / 60 min
-█████████████████ 108%
-
-Steps
-8,450 / 10,000
-██████████████░░░ 84%
+Calories  1850 / 2200 kcal
+Protein   132 / 160 g
+Carbs     205 / 250 g
+Fat       52 / 65 g
+Workout   이번 주 4 / 5일
 ```
 
-칼로리뿐만 아니라 운동과 활동량을 한 화면에서 확인할 수 있도록 한다.
+운동일은 완료 웨이트 또는 유산소 기록이 있는 날짜다. 같은 날 러닝과 웨이트를 해도 1일이다. 목표가 없으면 목표 설정을 안내한다. 걸음수와 운동시간 목표는 후속 릴리스이며 MVP는 실제 운동시간만 표시한다.
 
 ---
 
@@ -244,11 +234,9 @@ Floating Action Button 또는 Header 버튼 사용.
 🍚 식단
 ⚖️ 체중
 🏃 유산소
-💧 물
-📝 메모
 ```
 
-기록 추가 과정은 **페이지 이동을 최소화한다.**
+기록 추가 과정은 **페이지 이동을 최소화한다.** 물·독립 메모 입력은 후속 릴리스이며 각 기록의 메모 필드는 MVP에 포함한다.
 
 ---
 
@@ -268,7 +256,6 @@ Workout Session
 Date
 Start Time
 End Time
-Workout Type
 
 Exercises[]
 ```
@@ -381,10 +368,9 @@ PUSH
 PULL
 LEGS
 FULL BODY
-CARDIO
 ```
 
-사용자가 직접 추가/수정 가능.
+사용자가 직접 추가/수정 가능. MVP 루틴은 웨이트 종목으로 구성하고, 유산소는 별도 기록으로 제공한다. 웨이트·유산소 혼합 루틴은 후속 릴리스다.
 
 ---
 
@@ -407,8 +393,6 @@ Sets
 Volume
 12,840 kg
 
-Calories
-420 kcal
 ```
 
 추가로
@@ -420,46 +404,37 @@ Bench Press
 80kg × 8
 ```
 
-같은 정보를 제공한다.
+같은 정보를 제공한다. Today's Best는 현재 세션의 최대 중량 세트 표시이며 장기 PR 판정은 후속 범위다. 웨이트 칼로리 자동 추정은 MVP에서 제공하지 않는다.
 
 ---
 
 # 16. Cardio
 
-웨이트와 별도로 유산소 기록을 지원한다.
+웨이트와 함께 **기본 운동 카탈로그에 유산소 종목도 seed**한다. 공통 Exercise에서 trackingType으로 입력 방식을 구분하고, 유산소 결과는 CardioRecord에 저장한다.
 
-지원 운동
+| 기본 유산소 종목 | 필수 입력 | 선택 입력 / 표시 |
+|---|---|---|
+| 러닝 | 날짜, 시간 | 거리, 평균 pace |
+| 줄넘기 | 날짜, 시간 | 줄넘기 횟수 |
+| 걷기 | 날짜, 시간 | 거리, 평균 pace |
+| 사이클 | 날짜, 시간 | 거리, 평균 pace |
+| 계단 오르기 | 날짜, 시간 | 시간 중심 기록 |
+| 수영 | 날짜, 시간 | 거리 (m 입력을 km 저장값으로 변환) |
+| 기타 유산소 | 날짜, 시간 | 시간 중심 기록 |
 
-```text
-Running
-Walking
-Cycling
-Stair
-Swimming
-Other
-```
+모든 종목에서 칼로리·평균 심박·메모를 선택 입력할 수 있다. 칼로리는 사용자가 입력한 값이며 자동 추정하지 않는다. 거리·횟수 없이 시간만 저장할 수 있다. 줄넘기에 거리나 pace를 강제하지 않는다.
 
-기록 항목
+예: 러닝 30분 / 5km → pace 6분/km, 줄넘기 10분 / 1,000회.
 
-```text
-Duration
-Distance
-Calories
-Average Pace
-Heart Rate
-```
+MVP에서 제공할 흐름:
 
-예:
+- `/workout`에서 웨이트·유산소 검색/필터, 최근 종목, 즐겨찾기
+- Quick Add → 유산소 → 기본 또는 커스텀 종목 선택 → 기록 저장
+- 날짜·종목별 History 조회, 수정, 삭제
+- Dashboard 운동시간·운동일과 Calendar에 반영
+- Analytics에서 종목별 시간·거리 또는 횟수 추세 확인
 
-```text
-Running
-
-5.2 km
-31:24
-
-Pace
-6:02 / km
-```
+유산소는 완료 기록을 입력하는 방식이며 웨이트의 세트·중량·RPE Form과 구분한다. 커스텀 종목은 시간+거리 / 시간+횟수 / 시간 중 입력 방식을 선택한다. 원시 필드·단위·seed 키는 데이터 모델 명세를 따른다.
 
 ---
 
@@ -600,7 +575,7 @@ Muscle Mass
 Waist
 ```
 
-선택 기록
+후속 릴리스의 추가 신체 치수 (MVP 제외)
 
 ```text
 Chest
@@ -713,7 +688,7 @@ Fri █████████
 
 # 29. 운동 빈도
 
-Calendar Heatmap 활용.
+MVP는 주간 운동일·웨이트 완료 횟수와 월간 Calendar를 제공한다. 아래 연간 Calendar Heatmap은 후속 릴리스 예시다.
 
 Github contribution 그래프와 비슷한 방식.
 
@@ -746,7 +721,7 @@ Mar      80kg
 Apr      85kg
 ```
 
-1RM 추정값도 선택적으로 제공한다.
+1RM 추정값과 PR 판정은 후속 릴리스에서 제공한다.
 
 ---
 
@@ -838,39 +813,21 @@ Weight
 
 # 34. 목표 설정
 
-Settings > Goals
+`/settings`에서 다음 값을 저장한다. Dashboard보다 먼저 구현하며 새로고침·재로그인 후에도 유지한다.
 
-사용자가 목표 설정.
+- 이름
+- 목표 체중
+- 일일 칼로리·단백질·탄수화물·지방 목표
+- 주간 운동일 목표 (1~7일)
+- Light / Dark / System 테마
 
-```text
-Goal
-
-Lose Weight
-Maintain Weight
-Gain Muscle
-```
-
-설정 가능 값
-
-```text
-Target Weight
-
-Daily Calories
-
-Protein
-
-Carbs
-
-Fat
-
-Weekly Workout Days
-
-Daily Steps
-```
+초기 목표는 미설정 상태다. 미설정 목표의 달성률을 0%로 표시하지 않는다. 목표 이력은 MVP에 없으므로 과거 기간의 목표 대비 비율에도 **현재 목표 기준**임을 표시한다. MVP 시간대는 Asia/Seoul, 단위는 kg·cm·km·kcal·g다. 걸음수 목표·운동시간 목표·단위/시간대 변경은 후속 범위다.
 
 ---
 
-# 35. Streak
+# 35. Streak — 후속 릴리스
+
+MVP 완료 조건에서 제외한다.
 
 과도한 게임화는 피하되 기록 지속성을 위해 최소한의 Streak 제공.
 
@@ -1163,276 +1120,65 @@ SearchInput
 
 # 45. 데이터 구조
 
-## User
-
-```text
-User
-
-id
-email
-name
-createdAt
-```
-
----
-
-## UserGoal
-
-```text
-UserGoal
-
-targetWeight
-dailyCalories
-proteinGoal
-carbGoal
-fatGoal
-stepGoal
-weeklyWorkoutGoal
-```
-
----
-
-## BodyRecord
-
-```text
-BodyRecord
-
-id
-date
-
-weight
-bodyFat
-muscleMass
-
-waist
-
-createdAt
-```
-
----
-
-## WorkoutSession
-
-```text
-WorkoutSession
-
-id
-date
-
-startTime
-endTime
-
-duration
-
-memo
-```
-
----
-
-## WorkoutExercise
-
-```text
-WorkoutExercise
-
-id
-
-sessionId
-exerciseId
-
-order
-```
-
----
-
-## WorkoutSet
-
-```text
-WorkoutSet
-
-id
-
-exerciseId
-
-setNumber
-
-weight
-reps
-rpe
-```
-
----
-
-## Exercise
-
-```text
-Exercise
-
-id
-
-name
-category
-muscleGroup
-
-isCustom
-```
-
----
-
-## CardioRecord
-
-```text
-CardioRecord
-
-id
-
-date
-type
-
-duration
-distance
-pace
-
-calories
-heartRate
-```
-
----
-
-## Meal
-
-```text
-Meal
-
-id
-
-date
-mealType
-
-totalCalories
-```
-
----
-
-## Food
-
-```text
-Food
-
-id
-
-name
-
-calories
-
-protein
-carbs
-fat
-
-servingSize
-```
-
----
-
-## MealFood
-
-```text
-MealFood
-
-mealId
-foodId
-
-amount
-```
+구현 기준은 [데이터 모델 명세](<MyFit Log 데이터 모델 명세.md>)에 통합한다. PRD에는 별도 필드 목록을 유지하지 않는다.
+
+| 제품 영역 | 엔티티 |
+|---|---|
+| 계정·인증·설정 | User, Session, UserGoal, UserPreference |
+| 공통 운동 카탈로그·즐겨찾기 | Exercise, ExerciseFavorite |
+| 웨이트·루틴 | WorkoutSession, WorkoutExercise, WorkoutSet, WorkoutRoutine, RoutineExercise |
+| 유산소 | CardioRecord (CARDIO Exercise 참조) |
+| 음식·식사·즐겨찾기 | Food, FoodFavorite, Meal, MealFood |
+| 식단 프리셋 | MealPreset, MealPresetFood |
+| 신체 | BodyRecord |
+
+음식 영양정보·기록 당시 종목 이름은 snapshot으로 보존한다. 루틴/프리셋 변경은 과거 기록을 바꾸지 않는다. 신체 기록은 사용자·날짜당 1건이다. 최근 사용·통계·달력은 저장된 기록에서 조회한다. 운동 Draft는 계정별 IndexedDB에 저장하고 서버 revision으로 충돌을 확인한다.
 
 ---
 
 # 46. MVP 범위
 
-1차 버전에서는 반드시 필요한 기능만 구현한다.
+**P0와 P1을 모두 최종 MVP에 포함한다.** 우선순위는 구현 순서를 위한 구분이며 P1을 자동으로 제외하지 않는다.
 
-### Dashboard
+| 영역 | P0 핵심 흐름 | P1 완성도 기능 | 구현 Phase |
+|---|---|---|---|
+| 기반·인증 | 개발환경, DB, 로그인/로그아웃, 서버 세션, 개인 계정 관리 명령 | — | 0~5 |
+| Settings | 이름, 영양·체중·주간 운동일 목표, 테마 | — | 6 |
+| Workout | 종목 선택, 세트·중량·횟수·RPE, 시작/완료, 이전 기록, CRUD | 루틴, History, 운동 즐겨찾기 | 7 |
+| Cardio | — | 러닝·줄넘기 등 기본 seed, 시간·거리/횟수, CRUD·이력·즐겨찾기 | 2, 7 |
+| Diet | 음식·식사 CRUD, 제공량, 영양 합산 | 최근/자주 먹는 음식, 즐겨찾기, 식단 프리셋 | 8 |
+| Body | 체중·체지방·근육량·허리·메모, 빠른 체중 입력 | History, 7일 이동평균 | 9 |
+| Dashboard | 오늘 운동·영양·체중·목표·주간 요약 | 최근 운동, 추세 비교 | 10 |
+| Analytics / Calendar | — | 체중·웨이트·유산소·영양 추세, 날짜별 기록 조회 | 11~12 |
+| Quick Add | 운동·식단·체중 | 유산소 | 13 |
+| 기록 보존·UX | 데이터 영속성·입력 검증·오류 처리 | 운동 Draft 복구·재시도, 키보드·반응형 UX | 14~15 |
+| 개발 품질 | 인증·소유권·CSRF·기본 보안 | 접근성, API·통합·E2E·성능·전체 URL 검증 | 16~18 |
+| 배포 준비 | 운영 이미지·설정·migration·backup·restore | 로그·복구 리허설·인수 문서 | 19~22 |
+| 실제 운영 | MacBook·Tailscale HTTPS·실제 환경변수·외부 접속 | 덮개·재부팅·장애·실기기·1~2주 실사용 검증 | 23~29 |
 
-- 오늘 운동
-- 오늘 칼로리
-- 오늘 단백질
-- 현재 체중
-- 간단한 주간 요약
+MVP는 개인 사용자용 서비스다. 공개 회원가입은 제공하지 않고 운영자가 서버 관리 명령으로 계정을 생성·비밀번호 재설정한다. 다른 사용자의 데이터 접근을 막는 소유권 검증은 MVP에서도 적용한다.
 
-### Workout
-
-- 운동 생성
-- 운동 종목 등록
-- 세트 / 중량 / 횟수 기록
-- 운동 시간
-- 이전 기록 확인
-- 운동 루틴 저장
-
-### Diet
-
-- 음식 등록
-- 식단 기록
-- Calories
-- Protein
-- Carbs
-- Fat
-- 자주 먹는 식단 저장
-
-### Body
-
-- 체중
-- 체지방
-- 근육량
-
-### Analytics
-
-- 체중 그래프
-- 운동 빈도
-- 운동 시간
-- 칼로리 변화
-- 단백질 변화
-
-### Settings
-
-- 목표 체중
-- 목표 칼로리
-- 단백질 목표
-- 운동 목표
+기술 선택은 Next.js + NestJS + PostgreSQL + Prisma로 확정한다. 개발 완료(Phase 22), 실제 운영 준비 완료(Phase 28), 실사용을 포함한 MVP 완료(Phase 29)를 구분한다.
 
 ---
 
-# 47. MVP에서 제외
+# 47. MVP에서 제외 — 후속 릴리스(P2)
 
-초기 개발 복잡도를 줄이기 위해 다음 기능은 제외한다.
+- 걸음수·걸음수 목표, 운동시간 목표, 물 기록, 독립 메모, Streak
+- PR / Estimated 1RM / 연간 Heatmap / 고급 Analytics / 자동 운동 칼로리 추정
+- 가슴·팔·허벅지·엉덩이 등 추가 신체 치수, 사진 업로드
+- 웨이트·유산소 혼합 루틴, 목표 변경 이력, 단위·시간대 변경
+- 공개 회원가입, 이메일 인증·비밀번호 재설정 메일, 소셜 로그인
+- SNS·친구·커뮤니티·Trainer 기능
+- AI 코치·음식 사진 인식·운동 영상 분석
+- 스마트워치·Apple Health·Samsung Health·Google Fit 연동
+- PWA·Offline Shell·앱 전체 오프라인 동기화·다중 기기 자동 병합
 
-```text
-SNS
-
-친구 기능
-
-커뮤니티
-
-Trainer 기능
-
-AI 코치
-
-음식 사진 AI 인식
-
-스마트워치 연동
-
-Apple Health
-
-Samsung Health
-
-Google Fit
-
-운동 영상 분석
-```
-
-필요하면 Phase 2에서 추가한다.
+운동 작성 중 IndexedDB 저장·복구·재시도, 개별 기록의 메모, 운동 루틴·식단 프리셋은 MVP에 포함한다. 위 후속 범위와 혼동하지 않는다.
 
 ---
 
-# 48. Phase 2
+# 48. 후속 릴리스 아이디어
 
 향후 확장 가능 기능.
 
@@ -1477,7 +1223,7 @@ Bench Press
 
 ---
 
-# 49. Food Preset
+# 49. Food Preset — MVP P1
 
 식단 반복 입력을 최소화하는 기능.
 
@@ -1499,7 +1245,9 @@ Add to Today
 
 ---
 
-# 50. Workout Preset
+# 50. Workout Preset — MVP P1
+
+WorkoutRoutine과 같은 기능이며 별도 Preset 모델을 만들지 않는다.
 
 ```text
 PUSH
@@ -1515,7 +1263,7 @@ Triceps Pushdown
 
 ---
 
-# 51. 운동 Personal Record
+# 51. 운동 Personal Record — 후속 릴리스
 
 PR 기록.
 
@@ -1698,51 +1446,17 @@ Recharts
 
 # 59. Backend
 
-개인용 MVP라면
+Backend는 **NestJS + PostgreSQL + Prisma**로 확정한다. Next.js는 UI와 동일 origin API proxy를 담당하고 도메인 로직·인증·DB 접근은 NestJS가 담당한다. DB·API는 운영에서 host port를 직접 공개하지 않는다.
 
-```text
-Next.js API
-
-+
-
-PostgreSQL
-```
-
-구조로 충분하다.
-
-ORM
-
-```text
-Prisma
-```
-
-또는
-
-```text
-Drizzle ORM
-```
+Monorepo의 `apps/web`, `apps/api`, `packages/types`, `prisma` 구조와 상세 배치는 아키텍처를 따른다.
 
 ---
 
 # 60. 인증
 
-초기 개인용 환경에서는
+개인 계정을 서버 관리 명령으로 만든 뒤 이메일·비밀번호로 로그인한다. 비밀번호는 Argon2id, 인증은 DB Session과 HttpOnly cookie를 사용한다. 운영 HTTPS에서는 Secure cookie를 적용한다.
 
-```text
-Email Login
-```
-
-정도로 시작.
-
-향후
-
-```text
-Google
-
-Apple
-```
-
-로그인 추가 가능.
+공개 가입·이메일 발송·소셜 로그인은 후속 범위다. Tailscale 인증과 앱 인증은 별도로 유지한다.
 
 ---
 
@@ -1780,34 +1494,9 @@ database
 
 ---
 
-# 62. 프로젝트 구조 예시
+# 62. 프로젝트 구조
 
-```text
-src
-
-├─ app
-│
-├─ components
-│   ├─ ui
-│   ├─ dashboard
-│   ├─ workout
-│   ├─ diet
-│   └─ charts
-│
-├─ features
-│   ├─ workout
-│   ├─ diet
-│   ├─ body
-│   └─ analytics
-│
-├─ hooks
-│
-├─ lib
-│
-├─ services
-│
-└─ types
-```
+프로젝트 구조는 [아키텍처](<MyFit Log 기술 아키텍처 설계서.md>)의 40절을 따른다. `apps/web`와 `apps/api`를 분리한 pnpm workspace를 사용하며 Compose 파일은 repository root에 둔다. 단일 Next.js 앱 구조를 별도 대안으로 유지하지 않는다.
 
 ---
 
@@ -1933,51 +1622,9 @@ Last Weight
 
 # 67. MVP 개발 우선순위
 
-### P0
+46절의 P0/P1 표를 따른다. P0만 완성하면 핵심 시연 단계이며 P1까지 검증해야 최종 MVP다. P2는 47절의 후속 범위다.
 
-반드시 필요
-
-```text
-Dashboard
-
-Workout Record
-
-Diet Record
-
-Weight Record
-
-Goal Setting
-```
-
-### P1
-
-MVP 품질을 높이는 기능
-
-```text
-Workout Routine
-
-Food Preset
-
-Weight Chart
-
-Workout History
-
-Calendar
-```
-
-### P2
-
-향후 추가
-
-```text
-PR Tracking
-
-Advanced Analytics
-
-Smart Insight
-
-Health Platform Integration
-```
+구현 번호·의존성·완료 조건은 [체크리스트](<MyFit Log 구현 계획 및 개발 체크리스트.md>)만 관리한다. 첫 흐름은 로그인 → 웨이트 기록 → DB 저장 → Dashboard 반영이며, 이후 식단·신체·유산소로 확장한다.
 
 ---
 
