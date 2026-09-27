@@ -1,4 +1,5 @@
 'use client';
+import { useFormGuard } from '@/lib/form-guard';
 import { useRef, useState } from 'react';
 import { useUser } from '../auth-context';
 import { makeDraft } from '@/lib/draft/model';
@@ -21,6 +22,7 @@ export function NewWorkout({
   routineId?: string;
   initialDate?: string;
 }) {
+  const guard = useFormGuard();
   const router = useRouter();
   const user = useUser()!;
   const newId = useRef<string | null>(null);
@@ -33,6 +35,7 @@ export function NewWorkout({
     <Card className="mt-7 max-w-xl shadow-none">
       <CardContent>
         <form
+          {...guard.props}
           className="space-y-5"
           onSubmit={async (e) => {
             e.preventDefault();
@@ -48,6 +51,7 @@ export function NewWorkout({
             }
             setBusy(true);
             setError('');
+            let navigated = false;
             try {
               const id = newId.current ?? crypto.randomUUID();
               newId.current = id;
@@ -79,8 +83,10 @@ export function NewWorkout({
                   })) ?? [],
               };
               await draftStorage.put(makeDraft(user.id, record));
+              guard.markSaved();
               markFreshDraft(id);
               router.push(`/workout/${id}`);
+              navigated = true;
             } catch (error) {
               setError(
                 error instanceof Error && !('status' in error)
@@ -88,7 +94,7 @@ export function NewWorkout({
                   : errorMessage(error),
               );
             } finally {
-              setBusy(false);
+              if (!navigated) setBusy(false);
             }
           }}
         >

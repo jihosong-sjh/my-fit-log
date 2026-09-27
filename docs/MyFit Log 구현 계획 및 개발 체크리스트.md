@@ -21,7 +21,7 @@
 
 ## 실행 기록
 
-2026-09-27: Phase 0~14 완료. Phase 15 진행 중이며 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
+2026-09-27: Phase 0~15 구현·로컬 검증 완료. 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
 
 ## 작업 구간과 완료 상태
 
@@ -1144,8 +1144,8 @@ Synced
 
 ### Loading
 
-- [ ] Skeleton 적용
-- [ ] Layout Shift 최소화
+- [x] Skeleton 적용
+- [x] Layout Shift 최소화
 
 ---
 
@@ -1159,10 +1159,10 @@ Synced
 첫 운동을 기록해보세요.
 ```
 
-- [ ] Dashboard
-- [ ] Workout
-- [ ] Diet
-- [ ] Analytics
+- [x] Dashboard
+- [x] Workout
+- [x] Diet
+- [x] Analytics
 
 ---
 
@@ -1170,18 +1170,18 @@ Synced
 
 사용자 입력 유지.
 
-- [ ] Toast Error
-- [ ] Retry
-- [ ] Form 데이터 유지
+- [x] Toast Error
+- [x] Retry
+- [x] Form 데이터 유지
 
 ---
 
 ### Micro Interaction
 
-- [ ] Set Complete
-- [ ] Save Complete
-- [ ] Workout Complete
-- [ ] Quick Add
+- [x] Set Complete
+- [x] Save Complete
+- [x] Workout Complete
+- [x] Quick Add
 
 Animation:
 
@@ -1195,17 +1195,17 @@ Animation:
 
 Desktop 사용자용.
 
-- [ ] Tab 이동
-- [ ] 운동 세트 Enter는 다음 입력으로 이동, 일반 단일 입력 Form은 저장
-- [ ] Cmd/Ctrl + Enter 저장
-- [ ] Esc Modal 종료
+- [x] Tab 이동
+- [x] 운동 세트 Enter는 다음 입력으로 이동, 일반 단일 입력 Form은 저장
+- [x] Cmd/Ctrl + Enter 저장
+- [x] Esc Modal 종료
 
 Workout 입력에서는 키보드만으로 대부분 기록 가능하도록 한다.
 
 ### 추가 완료 조건
 
-- [ ] Cmd/Ctrl+Enter 저장, Esc 닫기와 미저장 데이터 처리
-- [ ] 375 / 390 / 430 / 768 / 1024 / 1440px에서 주요 화면 검증
+- [x] Cmd/Ctrl+Enter 저장, Esc 닫기와 미저장 데이터 처리
+- [x] 375 / 390 / 430 / 768 / 1024 / 1440px에서 주요 화면 검증
 
 ---
 

@@ -4,6 +4,8 @@ export default defineConfig({
   use: {
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3000',
     trace: 'retain-on-failure',
+    locale: 'ko-KR',
+    timezoneId: 'Asia/Seoul',
   },
   workers: 1,
   reporter: 'list',

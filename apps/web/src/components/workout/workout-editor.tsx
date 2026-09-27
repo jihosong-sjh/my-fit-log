@@ -1,4 +1,5 @@
 'use client';
+import { isNavigationApproved } from '@/lib/form-guard';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useUser } from '../auth-context';
@@ -41,6 +42,7 @@ function PreviousRecord({ exerciseId }: { exerciseId: string }) {
 function Editor({ initial }: { initial: WorkoutDraft }) {
   const router = useRouter();
   const form = useRef<HTMLFormElement>(null);
+  const nextFocus = useRef<string | null>(null);
   const [store] = useState(
     () => new DraftController(initial, draftStorage, sendDraft, recordsChanged),
   );
@@ -65,6 +67,7 @@ function Editor({ initial }: { initial: WorkoutDraft }) {
     const unload = (event: BeforeUnloadEvent) => {
       const value = store.getSnapshot();
       if (
+        !isNavigationApproved() &&
         store.isActive() &&
         (value.doc.syncState !== 'SYNCED' || value.storageError)
       ) {
@@ -122,6 +125,8 @@ function Editor({ initial }: { initial: WorkoutDraft }) {
       `/exercises/${exercise.id}/previous`,
     );
     const last = previous?.sets[0];
+    const setId = crypto.randomUUID();
+    nextFocus.current = setId;
     change({
       ...draft,
       exercises: [
@@ -133,7 +138,7 @@ function Editor({ initial }: { initial: WorkoutDraft }) {
           order: draft.exercises.length,
           sets: [
             {
-              id: crypto.randomUUID(),
+              id: setId,
               weight: last?.weight ?? '0',
               reps: last?.reps ?? null,
               rpe: last?.rpe ?? null,
@@ -148,12 +153,42 @@ function Editor({ initial }: { initial: WorkoutDraft }) {
   return (
     <form
       ref={form}
+      data-dirty={
+        state.doc.syncState !== 'SYNCED' &&
+        state.doc.localVersion > 0 &&
+        (!!state.storageError ||
+          state.persistedVersion !== state.doc.localVersion)
+      }
       className="space-y-6"
       onSubmit={(e) => {
         e.preventDefault();
         void save();
       }}
       onKeyDown={(e) => {
+        if (!e.currentTarget.contains(e.target as Node)) return;
+        if (
+          e.key === 'Enter' &&
+          !e.metaKey &&
+          !e.ctrlKey &&
+          e.target instanceof HTMLInputElement &&
+          e.target.hasAttribute('data-set-input')
+        ) {
+          e.preventDefault();
+          const inputs = Array.from(
+            e.currentTarget.querySelectorAll<HTMLInputElement>(
+              '[data-set-input]',
+            ),
+          );
+          const index = inputs.indexOf(e.target);
+          const next = inputs[index + 1];
+          if (next) next.focus();
+          else
+            e.target
+              .closest('[data-exercise]')
+              ?.querySelector<HTMLButtonElement>('[data-add-set]')
+              ?.focus();
+          return;
+        }
         if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
           e.preventDefault();
           void save();
@@ -188,7 +223,11 @@ function Editor({ initial }: { initial: WorkoutDraft }) {
           </span>
         </div>
         {draft.exercises.map((exercise, exerciseIndex) => (
-          <Card key={exercise.id} className="shadow-none">
+          <Card
+            key={exercise.id}
+            data-exercise={exercise.id}
+            className="shadow-none"
+          >
             <CardContent>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -259,13 +298,16 @@ function Editor({ initial }: { initial: WorkoutDraft }) {
                 {exercise.sets.map((set, index) => (
                   <div
                     key={set.id}
-                    className={`py-3 ${set.completed ? 'bg-success/5' : ''}`}
+                    className={`py-3 transition-colors duration-200 ${set.completed ? 'bg-success/5' : ''}`}
                   >
                     <div className="grid grid-cols-[24px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_40px] items-center gap-2">
                       <span className="text-center tabular-nums">
                         {index + 1}
                       </span>
                       <NumberInput
+                        data-set-input
+                        data-set-id={set.id}
+                        data-set-field="weight"
                         aria-label={`${exercise.exerciseNameSnapshot} ${index + 1}세트 중량`}
                         value={set.weight}
                         min="0"
@@ -278,6 +320,7 @@ function Editor({ initial }: { initial: WorkoutDraft }) {
                         }
                       />
                       <NumberInput
+                        data-set-input
                         aria-label={`${exercise.exerciseNameSnapshot} ${index + 1}세트 횟수`}
                         value={set.reps ?? ''}
                         min="1"
@@ -293,6 +336,7 @@ function Editor({ initial }: { initial: WorkoutDraft }) {
                         }
                       />
                       <NumberInput
+                        data-set-input
                         aria-label={`${exercise.exerciseNameSnapshot} ${index + 1}세트 RPE`}
                         value={set.rpe ?? ''}
                         min="1"
@@ -379,8 +423,10 @@ function Editor({ initial }: { initial: WorkoutDraft }) {
                 type="button"
                 variant="outline"
                 className="mt-4 w-full"
+                data-add-set
                 onClick={() => {
                   const last = exercise.sets.at(-1);
+                  const setId = crypto.randomUUID();
                   change({
                     ...draft,
                     exercises: draft.exercises.map((e) =>
@@ -390,7 +436,7 @@ function Editor({ initial }: { initial: WorkoutDraft }) {
                             sets: [
                               ...e.sets,
                               {
-                                id: crypto.randomUUID(),
+                                id: setId,
                                 weight: last?.weight ?? '0',
                                 reps: last?.reps ?? null,
                                 rpe: last?.rpe ?? null,
@@ -401,6 +447,13 @@ function Editor({ initial }: { initial: WorkoutDraft }) {
                         : e,
                     ),
                   });
+                  requestAnimationFrame(() =>
+                    form.current
+                      ?.querySelector<HTMLInputElement>(
+                        `[data-set-id="${setId}"][data-set-field="weight"]`,
+                      )
+                      ?.focus(),
+                  );
                 }}
               >
                 <Plus aria-hidden="true" />
@@ -409,7 +462,16 @@ function Editor({ initial }: { initial: WorkoutDraft }) {
             </CardContent>
           </Card>
         ))}
-        <ExercisePicker onSelect={addExercise} />
+        <ExercisePicker
+          onSelect={addExercise}
+          onAfterSelect={() =>
+            form.current
+              ?.querySelector<HTMLInputElement>(
+                `[data-set-id="${nextFocus.current}"][data-set-field="weight"]`,
+              )
+              ?.focus()
+          }
+        />
         <div>
           <label htmlFor="workout-memo" className="mb-2 block">
             운동 메모
@@ -685,7 +747,7 @@ export function WorkoutEditor({ id }: { id: string }) {
   const router = useRouter();
   const routerToList = () => router.push('/workout');
   return (
-    <main id="main-content" className="page-content">
+    <main id="main-content" tabIndex={-1} className="page-content">
       <h1 className="mb-7">운동 기록</h1>
       {readError ? (
         <Card>

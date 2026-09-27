@@ -1,11 +1,11 @@
 # MyFit Log
 
-개인 운동·식단·신체 기록. Next.js + NestJS + PostgreSQL / Prisma 모노레포입니다.
-진행 범위와 완료 기준은 [개발 체크리스트](<docs/MyFit Log 구현 계획 및 개발 체크리스트.md>)를 따릅니다.
+개인 운동·식단·신체 기록 앱. Next.js / NestJS / PostgreSQL / Prisma / pnpm workspace로 구성합니다.
+현재 Phase 0~15 구현·로컬 검증을 완료했습니다. [체크리스트](<docs/MyFit Log 구현 계획 및 개발 체크리스트.md>)와 [검증 기록](docs/development-log.md)을 기준으로 진행합니다.
 
-## 로컬 개발
+## 처음 실행
 
-Node **22.23.3**, pnpm **10.34.5**, Docker Desktop(Compose v2)을 사용합니다.
+Node **22.23.3**, pnpm **10.34.5**, Docker Desktop(Compose 지원)이 필요합니다.
 
 ```sh
 nvm install
@@ -14,118 +14,102 @@ npm install --global pnpm@10.34.5
 pnpm install --frozen-lockfile
 pnpm setup:dev
 pnpm dev:up
-```
-
-Web: http://localhost:3000 / API liveness: http://localhost:4000/health/live
-각 앱만 실행하려면 `pnpm dev:web`, `pnpm dev:api`를 사용합니다.
-
-```sh
-pnpm typecheck
-pnpm build
-pnpm format:check
-```
-
-## 구조
-
-- `apps/web`: Next.js App Router, 동일 origin API proxy
-- `apps/api`: NestJS API
-- `packages/types`, `packages/config`, `packages/ui`: 공통 계약·설정·UI
-- `prisma`, `infra`, `scripts`: DB와 개발 인프라
-- `docs`: 기존 기획·설계 문서(경로 보존)
-
-운영 이미지·배포·계정 생성·백업은 Phase 19 이후 및 해당 기능 단계에서 제공합니다.
-현재 개발 환경을 운영에 사용하지 않습니다.
-
-## Docker 개발 환경
-
-`pnpm setup:dev`는 Git에서 제외한 `.env.development`를 생성합니다(기존 파일 보존).
-`pnpm dev:up` 또는 다음 명령으로 Web/API/DB가 함께 시작됩니다.
-
-```sh
-docker compose --env-file .env.development -f compose.dev.yml up -d
-```
-
-소스는 bind mount하며 Next HMR / Nest watch로 반영됩니다. 의존성·Dockerfile 변경 후에는 `pnpm dev:up`으로 다시 빌드합니다.
-DB는 localhost:5432, 개발 전용 `myfit_dev` / `myfit-dev-postgres` volume을 사용합니다.
-테스트 DB는 `--profile test up -d db-test`로 실행하며 localhost:5433, `myfit_test` / `myfit-test-postgres`로 분리합니다.
-모든 개발 포트는 127.0.0.1에만 노출합니다. 운영 DB/volume은 향후 별도 구성하며 개발 비밀번호를 재사용하지 않습니다.
-`pnpm dev:down`은 volume을 보존합니다. `down -v`는 기록을 삭제하므로 사용에 주의합니다.
-
-컨테이너 대신 호스트에서 앱을 실행하려면 DB만 켜고 `.env.development`를 셸에 로드한 후 `pnpm dev`를 실행합니다.
-`/health/live`는 API 프로세스, `/health/ready`는 DB 연결, Web `/api/v1`은 같은 origin의 API proxy를 확인합니다.
-
-개발 환경 회귀 검증: `pnpm exec playwright install chromium` 후 `pnpm test:dev`.
-이 명령은 실행 중인 개발 컨테이너와 소스 변경 권한이 필요하며 Web/API 파일을 잠시 수정했다가 복원합니다.
-
-## Database / Prisma
-
-```sh
-pnpm build:packages   # Prisma Client와 공통 패키지 생성
-pnpm db:migrate       # 개발 DB에 커밋된 migration 적용
-pnpm db:seed          # 공용 운동 20종, 재실행 가능
-pnpm db:migrate:dev --name describe_change  # schema 변경 시 개발 migration 작성
-pnpm test:unit
-# 테스트 DB는 개발/운영 DB와 분리됩니다.
-docker compose --env-file .env.development -f compose.dev.yml --profile test up -d --wait db-test
-pnpm test:db
-```
-
-Prisma 명령은 `.env.development`를 읽습니다. 이미 설정한 `DATABASE_URL`은 덮어쓰지 않습니다.
-`test:db`는 localhost:5433/myfit_test만 허용하고 테스트에서 만든 사용자 데이터만 정리합니다.
-원시 Prisma Client는 서버 전용입니다. 인증된 사용자 ID로 `UserStore`를 생성하며 클라이언트의 userId나 Prisma 입력을 그대로 전달하지 않습니다.
-DB trigger는 카탈로그 소유권·유형·archive·snapshot·소유자 변경을 추가로 보호합니다. 인증 가드는 Phase 5에서 연결합니다.
-
-호스트 앱 실행은 `pnpm dev`가 개발 env를 로드합니다. Docker 앱과 같은 포트를 쓰므로 먼저 `docker compose --env-file .env.development -f compose.dev.yml stop web api`로 앱 컨테이너만 중지합니다.
-
-## API 기반 검증
-
-- API: `http://localhost:4000/api/v1`, 브라우저는 `http://localhost:3000/api/v1` 사용
-- OpenAPI: `http://localhost:3000/api/docs` (개발 전용)
-- `pnpm test:api`: DTO·응답·오류·로그·설정 테스트
-- `pnpm test:api:smoke`: 실행 중인 개발 DB를 잠시 중단하고 반드시 재시작하여 readiness 복구 확인
-
-인증 및 도메인 모듈은 경계만 마련했으며 실제 개인 기록 API는 Phase 5 이후 구현합니다.
-
-## UI / 브라우저 검증
-
-`http://localhost:3000/design-system`에서 공통 입력·모달·시트·탭·진행률·알림을 확인합니다.
-예제 값은 저장되지 않습니다. 디자인 토큰·배치는 [디자인 시스템](docs/design-system.md)에 정리했습니다.
-
-```sh
-pnpm exec playwright install chromium
-pnpm test:web
-pnpm lint
-pnpm typecheck
-pnpm format:check
-pnpm build
-```
-
-브라우저 테스트는 375/390/430/768/1024/1440px, Light/Dark/System,
-키보드 포커스·다이얼로그·시트·탭·입력·Toast를 검증합니다. 스크린샷은 `test-results`에 생성합니다.
-Pretendard와 shadcn/ui의 라이선스는 해당 소스 디렉터리에 보존했습니다.
-
-## 개인 계정과 세션
-
-```sh
+pnpm build:packages
+pnpm db:migrate
+pnpm db:seed
 pnpm account:create --email you@example.com --name 사용자
+```
+
+http://localhost:3000/login 에서 생성한 계정으로 로그인합니다.
+비밀번호는 숨김 프롬프트로 입력합니다(12~128자). 공개 회원가입과 기본 계정은 없습니다.
+자동화에는 `--password-stdin`을 사용하며 비밀번호를 명령 인자로 넘기지 않습니다.
+
+`setup:dev`는 임의 DB 비밀번호·SESSION_SECRET을 포함하는 `.env.development`를 생성하고 0600 권한으로 Git에서 제외합니다. 기존 파일은 보존합니다.
+
+## 개발 환경
+
+| 서비스            | 주소           | 저장 영역                               |
+| ----------------- | -------------- | --------------------------------------- |
+| Web               | localhost:3000 | Next App Router / 동일 origin API proxy |
+| API               | localhost:4000 | `/api/v1`                               |
+| 개발 PostgreSQL   | localhost:5432 | myfit_dev / myfit-dev-postgres          |
+| 테스트 PostgreSQL | localhost:5433 | myfit_test / myfit-test-postgres        |
+
+개발 포트는 127.0.0.1에만 bind합니다. Web/API 소스는 bind mount하며 Next HMR / Nest watch로 반영됩니다.
+의존성·설정 변경 후 `pnpm dev:up`으로 이미지를 다시 빌드합니다.
+
+```sh
+# 이미지가 준비되면 세 서비스 기동
+docker compose --env-file .env.development -f compose.dev.yml up -d
+# 중지 (DB volume 보존)
+pnpm dev:down
+# 컨테이너 대신 호스트 앱으로 개발
+docker compose --env-file .env.development -f compose.dev.yml stop web api
+pnpm dev
+```
+
+`pnpm dev`는 개발 env를 읽고 Web/API를 함께 실행합니다. 별도 실행은 `pnpm dev:web`, `pnpm dev:api`입니다.
+`down -v`는 DB volume을 삭제합니다. 운영 이미지·배포·백업은 Phase 19 이후 별도 작업입니다.
+
+## DB와 계정 관리
+
+```sh
+pnpm db:generate
+pnpm db:migrate
+pnpm db:seed
+pnpm db:migrate:dev --name describe_change
 pnpm account:reset --email you@example.com
 pnpm sessions:prune
 ```
 
-계정 명령은 화면에 표시되지 않는 비밀번호 프롬프트를 사용합니다(12~128자).
-자동화에서는 `--password-stdin`을 사용하고 비밀번호를 명령 인자에 넣지 않습니다.
-공개 회원가입은 없으며 `/login`에서 로그인합니다. 계정 재설정은 기존 세션을 모두 폐기합니다.
-`.env.development`에는 최소 32자의 `SESSION_SECRET`이 필요하며 `pnpm setup:dev`가 새 파일 생성 시 이를 만듭니다.
+Prisma 명령은 `.env.development`를 읽으며 이미 설정한 `DATABASE_URL`은 덮어쓰지 않습니다.
+공용 운동 seed는 웨이트 13종·유산소 7종이며 재실행해도 중복되지 않습니다.
+계정 생성 시 목표·설정을 함께 생성하고, 비밀번호 재설정 시 기존 세션을 모두 폐기합니다.
 
-`pnpm test:api`와 `pnpm test:web`는 실행 중인 격리 테스트 DB(5433/myfit_test)가 필요합니다.
-브라우저 검증은 전용 서버 3100/4100을 자동 기동·종료합니다. 테스트 계정은 생성 후 삭제합니다.
-`pnpm dev`는 호스트 Web/API, Docker의 개발 DB를 함께 사용합니다.
+DB trigger는 카탈로그 소유권·유형·archive·snapshot을 보호합니다. API는 세션 사용자 ID로 모든 개인 기록을 제한하며 클라이언트의 userId를 받지 않습니다.
 
-## 운동 Draft
+## 검증
 
-운동 입력은 IndexedDB에 먼저 보존하고 약 800ms 후 서버에 동기화합니다.
-복구/폐기 안내, 연결 실패 재시도, 만료 후 재로그인, 동시 수정 비교를 제공합니다.
-완료 응답을 확인한 입력만 기기에서 정리합니다. 로그아웃 시 미동기화 입력을 확인하고 해당 계정의 Draft만 정리합니다.
-앱 전체 오프라인 실행과 자동 다중 기기 병합은 후속 범위입니다.
+```sh
+docker compose --env-file .env.development -f compose.dev.yml --profile test up -d --wait db-test
+pnpm exec playwright install chromium
+pnpm verify
+```
 
-`pnpm test:draft`는 동기화 엔진을, `pnpm test:web --grep 'draft|response loss|persistent-browser|in-flight|401 preserves|IndexedDB|logout warns'`는 실제 브라우저 저장·복구 흐름을 검증합니다.
+`verify`는 lint → typecheck → 날짜/집계 단위 테스트 → Draft 엔진 → DB → API → 브라우저 → production build → formatting 순서로 검사합니다.
+개별 명령은 `pnpm test:unit`, `pnpm test:draft`, `pnpm test:db`, `pnpm test:api`, `pnpm test:web`입니다.
+
+DB/API/브라우저 검증은 **localhost:5433/myfit_test**만 사용합니다. 브라우저 테스트 서버 3100/4100을 자동 기동·종료하고 생성한 테스트 계정을 정리합니다.
+375/390/430/768/1024/1440px 및 테마·키보드·기록 저장·실패 복구를 검증하며 스크린샷은 `test-results`에 생성합니다.
+
+개발 컨테이너가 실행 중일 때 추가 확인:
+
+```sh
+pnpm test:dev
+pnpm test:api:smoke
+```
+
+`test:dev`는 소스를 잠시 변경·복원해 실제 HMR과 Nest reload를 확인합니다.
+`test:api:smoke`는 개발 DB를 잠시 중지했다 재시작해 live/ready 분리와 복구를 검증합니다.
+
+## 사용 화면과 동작
+
+- `/dashboard`: 하루·주간 운동/영양/체중/목표와 빠른 체중 입력
+- `/workout`, `/routines`: 웨이트·유산소·루틴·이력·운동 Draft
+- `/diet`, `/diet/presets`: 음식·식사·즐겨찾기·프리셋
+- `/body`, `/analytics`, `/calendar`, `/settings`: 신체 기록·추세·캘린더·목표/테마
+- `/design-system`: 저장하지 않는 UI 예제
+- `/api/docs`: 개발 전용 OpenAPI; `/health/live`, `/health/ready`는 API 직접 접근
+
+운동은 IndexedDB에 먼저 보존하고 약 800ms 후 서버로 전송합니다. 응답 유실 시 동일 요청으로 재시도하며 전송 중 편집도 유지합니다. 401은 재로그인, 404는 삭제된 기록 재생성 방지, 409는 서버/기기 비교 후 사용자 선택으로 처리합니다.
+완료 ACK를 확인한 Draft만 정리하고, 로그아웃 시 미동기화 확인 후 해당 계정 Draft를 정리합니다. 앱 전체 오프라인 실행·자동 다중 기기 병합은 후속 범위입니다.
+
+## 구조와 문서
+
+- `apps/web`, `apps/api`: 화면과 API
+- `packages/types`, `packages/config`, `packages/ui`: 계약·설정·공통 UI
+- `prisma`: 19개 데이터 모델·migration·seed·DB 검증
+- `scripts`, `compose.dev.yml`: 개발·관리·검증 명령
+- `docs`: [문서 안내](docs/README.md), [디자인 시스템](docs/design-system.md), [개발 작업 기록](docs/development-log.md)
+
+Pretendard와 shadcn/ui 라이선스는 해당 소스 디렉터리에 보존했습니다. 실제 Tailscale/스마트폰/장시간 운영 검증은 후속 Phase에서 수행합니다.

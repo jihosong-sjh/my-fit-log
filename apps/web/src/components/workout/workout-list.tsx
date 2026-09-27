@@ -22,7 +22,7 @@ export function WorkoutList({ history = false }: { history?: boolean }) {
   const workouts = history ? strength.data : strength.data?.slice(0, 5);
   const cardioRows = history ? cardio.data : cardio.data?.slice(0, 5);
   return (
-    <main id="main-content" className="page-content">
+    <main id="main-content" tabIndex={-1} className="page-content">
       <DraftBanner />
       <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
         <h1>{history ? '운동 이력' : '운동'}</h1>

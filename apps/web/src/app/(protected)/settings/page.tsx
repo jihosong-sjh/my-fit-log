@@ -1,4 +1,5 @@
 'use client';
+import { useFormGuard } from '@/lib/form-guard';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
@@ -29,11 +30,19 @@ const fields: [GoalKey, string, string][] = [
   ['fatGoal', '지방', 'g'],
 ];
 function SettingsForm({ initial }: { initial: Settings }) {
+  const guard = useFormGuard();
   const router = useRouter();
-  const { setTheme } = useTheme();
+  const { setTheme, theme: activeTheme } = useTheme();
   const [name, setName] = useState(initial.profile.name);
   const [goals, setGoals] = useState(initial.goal);
-  const [theme, changeTheme] = useState(initial.preference.theme);
+  const [selectedTheme, changeTheme] = useState<
+    Settings['preference']['theme'] | null
+  >(null);
+  const theme =
+    selectedTheme ??
+    ((
+      activeTheme ?? initial.preference.theme
+    ).toUpperCase() as Settings['preference']['theme']);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const save = async () => {
@@ -54,6 +63,8 @@ function SettingsForm({ initial }: { initial: Settings }) {
         },
       });
       setTheme(theme.toLowerCase());
+      changeTheme(null);
+      guard.markSaved();
       recordsChanged();
       router.refresh();
       toast.success('설정을 저장했어요');
@@ -67,12 +78,14 @@ function SettingsForm({ initial }: { initial: Settings }) {
   };
   return (
     <form
+      {...guard.props}
       className="max-w-3xl space-y-6"
       onSubmit={(e) => {
         e.preventDefault();
         void save();
       }}
       onKeyDown={(e) => {
+        if (!e.currentTarget.contains(e.target as Node)) return;
         if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
           e.preventDefault();
           e.currentTarget.requestSubmit();
@@ -182,7 +195,7 @@ function SettingsForm({ initial }: { initial: Settings }) {
 export default function SettingsPage() {
   const { data, error, loading, reload } = useResource<Settings>('/settings');
   return (
-    <main id="main-content" className="page-content">
+    <main id="main-content" tabIndex={-1} className="page-content">
       <h1 className="mb-7">설정</h1>
       {error && <ErrorState message={error} retry={reload} />}{' '}
       {!data && loading ? (

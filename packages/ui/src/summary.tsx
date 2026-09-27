@@ -24,7 +24,7 @@ export function StatCard({
         </span>
       </CardHeader>
       <CardContent>
-        <p className="text-3xl font-semibold tabular-nums tracking-tight">
+        <p className="break-words text-[clamp(1.25rem,4vw,1.875rem)] font-semibold tabular-nums tracking-tight">
           {value ?? '—'}{' '}
           <span className="text-sm font-normal text-muted-foreground">
             {unit}
@@ -97,12 +97,14 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center px-5 py-10 text-center">
-      <span
-        aria-hidden="true"
-        className="mb-4 rounded-2xl bg-muted p-3 text-muted-foreground"
-      >
-        {icon}
-      </span>
+      {icon && (
+        <span
+          aria-hidden="true"
+          className="mb-4 rounded-2xl bg-muted p-3 text-muted-foreground"
+        >
+          {icon}
+        </span>
+      )}
       <h3>{title}</h3>
       <p className="mt-2 max-w-sm text-sm text-muted-foreground">
         {description}

@@ -1,4 +1,5 @@
 'use client';
+import { useFormGuard, confirmUnsavedForms } from '@/lib/form-guard';
 import { useState } from 'react';
 import { Scale } from 'lucide-react';
 import { toast } from 'sonner';
@@ -25,6 +26,7 @@ function BodyForm({
   date: string;
   initial: BodyRecord | null;
 }) {
+  const guard = useFormGuard();
   const [value, setValue] = useState({
     weight: initial?.weight ?? '',
     bodyFat: initial?.bodyFat ?? '',
@@ -36,6 +38,7 @@ function BodyForm({
   const [error, setError] = useState('');
   return (
     <form
+      {...guard.props}
       className="space-y-4"
       onSubmit={async (e) => {
         e.preventDefault();
@@ -52,6 +55,7 @@ function BodyForm({
               memo: value.memo || null,
             },
           });
+          guard.markSaved();
           recordsChanged();
           toast.success('신체 기록을 저장했어요');
         } catch (e) {
@@ -62,6 +66,7 @@ function BodyForm({
         }
       }}
       onKeyDown={(e) => {
+        if (!e.currentTarget.contains(e.target as Node)) return;
         if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
           e.preventDefault();
           e.currentTarget.requestSubmit();
@@ -112,7 +117,7 @@ function BodyForm({
         </p>
       )}
       <Button type="submit" disabled={busy}>
-        {busy ? '저장 중…' : '신체 기록 저장'}
+        {busy ? '저장 중…' : error ? '다시 저장' : '신체 기록 저장'}
       </Button>
       <p className="caption">
         같은 날의 기록이 있으면 갱신합니다. 선택 항목을 비우고 저장하면 해당
@@ -134,7 +139,7 @@ export function BodyPage({
   );
   const selected = useResource<BodyRecord | null>(`/body/${date}`);
   return (
-    <main id="main-content" className="page-content">
+    <main id="main-content" tabIndex={-1} className="page-content">
       <h1 className="mb-7">신체 기록</h1>
       <div className="grid items-start gap-6 xl:grid-cols-[1fr_1.4fr]">
         <Card className="shadow-none">
@@ -150,7 +155,8 @@ export function BodyPage({
                 id="body-date"
                 value={date}
                 onChange={(e) => {
-                  if (e.target.value) setDate(e.target.value);
+                  if (e.target.value && confirmUnsavedForms())
+                    setDate(e.target.value);
                 }}
                 required
               />
@@ -269,6 +275,7 @@ export function BodyPage({
                     <Button
                       variant="outline"
                       onClick={() => {
+                        if (!confirmUnsavedForms()) return;
                         setDate(record.date);
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                       }}

@@ -29,7 +29,7 @@ export function DietPage({ initialDate }: { initialDate?: string }) {
     fat: sum(data?.map((m) => m.totals.fat) ?? []),
   };
   return (
-    <main id="main-content" className="page-content">
+    <main id="main-content" tabIndex={-1} className="page-content">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h1>식단</h1>
         <div className="flex gap-2">

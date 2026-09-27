@@ -95,6 +95,12 @@ test('mobile navigation, quick add and system theme', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
   await page.goto('/design-system');
   await expect(page.locator('html')).toHaveClass(/dark/);
+  expect(
+    await page
+      .locator('[data-slot="skeleton"]')
+      .first()
+      .evaluate((element) => getComputedStyle(element).animationIterationCount),
+  ).toBe('1');
   await page
     .getByRole('button', { name: '빠른 기록', exact: true })
     .filter({ visible: true })

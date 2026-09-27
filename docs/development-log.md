@@ -163,3 +163,24 @@
 - Draft 엔진 5개 통과. 실제 브라우저 6개 검증 통과: 완료 응답 유실 동일 mutation/중복 없음, 동일 프로필 Chromium 프로세스 종료·재실행 후 미전송 입력 복구, 늦은 ACK/409 수동 해결/404 보존, 실제 세션 폐기401→재로그인 복구, IndexedDB quota/schemaVersion 오류, logout 취소·확인·타 계정 Draft 보존.
 - 기존 루틴 복사 회귀도 복구 화면을 거쳐 통과. lint/typecheck 성공.
 - 브라우저 종료 시 미동기화 안내. 운동 입력의 기기 보존·재시도 범위이며 앱 전체 오프라인 실행/자동 다중 기기 병합은 P2다.
+
+## Phase 15 — UX / Keyboard 및 통합 검증 (2026-09-27)
+
+- Skeleton과 loading/error/not-found 경계, 빈 상태, 실패 시 입력 유지·Toast·다시 저장, 150~200ms 전환과 reduced motion 적용.
+- 운동 Enter: 중량→횟수→RPE/다음 세트 입력. 종목 선택 후 첫 중량으로 포커스, Cmd/Ctrl+Enter 저장, 일반 체중 Form Enter 저장, Tab/Space 완료 체크.
+- 미저장 Form의 페이지 이동·브라우저 이탈 안내, modal Escape/외부 클릭/닫기의 입력 폐기 확인. Draft가 기기에 저장된 경우 화면 이동 후 복구 가능하며 기기 쓰기 실패는 별도 보호.
+- 입력 서버 저장 후 이동 중 중복 제출 방지, 하위 화면 내비게이션 활성화, 테마 설정 캐시 갱신, 본문 건너뛰기 포커스 보완.
+- 로그인 제한은 같은 Next proxy/IP를 공유하는 사용을 고려해 IP당 100회/계정당 20회(15분), 비밀번호·세션 보안 테스트 유지.
+- `pnpm verify` 전체 통과: 단위 4 + Draft 엔진 5 + DB 통합 6 + API 23 + 브라우저 29 = **67개**. lint/typecheck/production build/Prettier도 통과.
+- 주요 7개 화면(Dashboard/Workout/Diet/Body/Analytics/Calendar/Settings)을 375/390/430/768/1024/1440px에서 확인. 가로 넘침 없음, 브라우저 오류 없음, skip link 실제 focus 검증, 375/1440px 스크린샷 육안 검토.
+- 설계 문서의 초기 상태·폼 라이브러리 후보를 실제 React local state/Context/useSyncExternalStore, controlled forms, Nest DTO validation 구성에 맞춰 갱신. README를 설치→DB→계정→실행→검증 순서로 정리.
+- Phase 16~29의 추가 보안/접근성/성능/운영/실기기·실사용 완료는 이 결과에 포함하지 않는다.
+
+### 최종 개발 환경 재확인
+
+- 최신 의존성으로 `pnpm dev:up` 이미지 재빌드 후 Web/API/개발 DB healthy. 별도 테스트 DB도 healthy.
+- `pnpm test:dev`: 실제 브라우저 HMR, Nest watch 자동 재시작, 동일 origin proxy 통과.
+- `pnpm test:api:smoke`: PostgreSQL 실제 중단 시 live 유지/ready 실패, 재시작 후 ready 복구와 OpenAPI proxy 통과.
+- reduced-motion에서 Skeleton 반복을 1회로 제한하고 해당 브라우저 시나리오 재검증 통과.
+- `.env.development` Git 제외 확인, 개발 포트 loopback bind, migration/테스트 DB 분리 유지.
+- 체크리스트 Phase 0~15의 미완료 체크 0개. 이후 Phase는 그대로 미완료로 유지한다.

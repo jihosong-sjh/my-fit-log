@@ -13,7 +13,11 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   return (
-    <main id="main-content" className="grid min-h-dvh place-items-center p-5">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="grid min-h-dvh place-items-center p-5"
+    >
       <div className="w-full max-w-md">
         <div className="mb-8 flex items-center justify-center gap-2 text-xl font-bold">
           <Activity className="size-6 text-brand" aria-hidden="true" />

@@ -6,7 +6,7 @@ export default async function Page({
 }) {
   const { routine, date } = await searchParams;
   return (
-    <main id="main-content" className="page-content">
+    <main id="main-content" tabIndex={-1} className="page-content">
       <h1>운동 시작</h1>
       <p className="mt-3 text-muted-foreground">
         빈 운동이나 준비해둔 루틴으로 시작하세요.

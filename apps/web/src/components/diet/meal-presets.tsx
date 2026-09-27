@@ -1,4 +1,6 @@
 'use client';
+import { GuardedDialogContent } from '@/components/guarded-dialog';
+import { useFormGuard } from '@/lib/form-guard';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -18,7 +20,6 @@ import { NumberInput, DatePicker } from '@myfit/ui/fields';
 import { Card, CardContent } from '@myfit/ui/card';
 import {
   Dialog,
-  DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
@@ -35,6 +36,7 @@ function PresetEditor({
   initial: MealPresetRecord | null;
   onSaved: () => void;
 }) {
+  const guard = useFormGuard();
   const [name, setName] = useState(initial?.name ?? '');
   const [type, setType] = useState(initial?.defaultMealType ?? '');
   const [foods, setFoods] = useState<
@@ -46,6 +48,10 @@ function PresetEditor({
       servings: f.servings,
     })) ?? [],
   );
+  const changeFoods = (next: typeof foods) => {
+    guard.markDirty();
+    setFoods(next);
+  };
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const totals = nutritionTotal(
@@ -59,6 +65,7 @@ function PresetEditor({
   );
   return (
     <form
+      {...guard.props}
       className="space-y-4"
       onSubmit={async (e) => {
         e.preventDefault();
@@ -75,11 +82,13 @@ function PresetEditor({
               })),
             },
           });
+          guard.markSaved();
           recordsChanged();
           toast.success('프리셋을 저장했어요');
           onSaved();
         } catch (e) {
           setError(errorMessage(e));
+          toast.error(errorMessage(e));
         } finally {
           setBusy(false);
         }
@@ -130,7 +139,7 @@ function PresetEditor({
             id={`preset-serving-${index}`}
             value={item.servings}
             onChange={(e) =>
-              setFoods(
+              changeFoods(
                 foods.map((f) =>
                   f.key === item.key ? { ...f, servings: e.target.value } : f,
                 ),
@@ -144,7 +153,7 @@ function PresetEditor({
             <FoodPicker
               label="음식 교체"
               onSelect={(food) =>
-                setFoods(
+                changeFoods(
                   foods.map((f) => (f.key === item.key ? { ...f, food } : f)),
                 )
               }
@@ -152,7 +161,9 @@ function PresetEditor({
             <Button
               type="button"
               variant="ghost"
-              onClick={() => setFoods(foods.filter((f) => f.key !== item.key))}
+              onClick={() =>
+                changeFoods(foods.filter((f) => f.key !== item.key))
+              }
             >
               제거
             </Button>
@@ -161,7 +172,7 @@ function PresetEditor({
       ))}
       <FoodPicker
         onSelect={(food) =>
-          setFoods([
+          changeFoods([
             ...foods,
             { key: crypto.randomUUID(), food, servings: '1' },
           ])
@@ -193,7 +204,7 @@ export function MealPresets() {
   const [type, setType] = useState<MealType>('BREAKFAST');
   const [busy, setBusy] = useState(false);
   return (
-    <main id="main-content" className="page-content">
+    <main id="main-content" tabIndex={-1} className="page-content">
       <div className="mb-7 flex flex-wrap justify-between gap-4">
         <h1>식단 프리셋</h1>
         <Button onClick={() => setEditing(null)}>프리셋 만들기</Button>
@@ -292,7 +303,7 @@ export function MealPresets() {
           if (!open) setEditing(undefined);
         }}
       >
-        <DialogContent className="max-h-[85dvh] overflow-y-auto">
+        <GuardedDialogContent className="max-h-[85dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editing ? '프리셋 편집' : '프리셋 만들기'}
@@ -308,7 +319,7 @@ export function MealPresets() {
               onSaved={() => setEditing(undefined)}
             />
           )}
-        </DialogContent>
+        </GuardedDialogContent>
       </Dialog>
       <Dialog
         open={!!applying}
@@ -316,7 +327,7 @@ export function MealPresets() {
           if (!open) setApplying(undefined);
         }}
       >
-        <DialogContent>
+        <GuardedDialogContent>
           <DialogHeader>
             <DialogTitle>식사에 프리셋 추가</DialogTitle>
             <DialogDescription>
@@ -329,6 +340,7 @@ export function MealPresets() {
               onSubmit={async (e) => {
                 e.preventDefault();
                 setBusy(true);
+                let navigated = false;
                 try {
                   await api(`/meal-presets/${applying.id}/apply`, {
                     method: 'POST',
@@ -338,10 +350,11 @@ export function MealPresets() {
                   toast.success('프리셋을 식사에 추가했어요');
                   setApplying(undefined);
                   router.push(`/diet?date=${date}`);
+                  navigated = true;
                 } catch (error) {
                   toast.error(errorMessage(error));
                 } finally {
-                  setBusy(false);
+                  if (!navigated) setBusy(false);
                 }
               }}
             >
@@ -395,7 +408,7 @@ export function MealPresets() {
               </Button>
             </form>
           )}
-        </DialogContent>
+        </GuardedDialogContent>
       </Dialog>
     </main>
   );

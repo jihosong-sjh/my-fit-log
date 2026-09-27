@@ -72,7 +72,10 @@ export class AuthService {
         count: 0,
         until: now + 15 * 60 * 1000,
       };
-      if (current.count >= 20 || this.attempts.size >= 10000)
+      if (
+        current.count >= (key.startsWith('ip:') ? 100 : 20) ||
+        this.attempts.size >= 10000
+      )
         throw new PublicError('RATE_LIMITED');
       current.count++;
       this.attempts.set(key, current);

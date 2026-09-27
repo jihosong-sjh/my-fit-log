@@ -1,4 +1,5 @@
 'use client';
+import { useFormGuard } from '@/lib/form-guard';
 import { useState } from 'react';
 import { localDate } from '@myfit/types';
 import { toast } from 'sonner';
@@ -10,11 +11,13 @@ export function QuickWeight({
 }: {
   date?: string;
 }) {
+  const guard = useFormGuard();
   const [weight, setWeight] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   return (
     <form
+      {...guard.props}
       onSubmit={async (e) => {
         e.preventDefault();
         setBusy(true);
@@ -22,6 +25,7 @@ export function QuickWeight({
         try {
           await api(`/body/${date}`, { method: 'PUT', json: { weight } });
           setWeight('');
+          guard.markSaved();
           recordsChanged();
           toast.success('체중을 저장했어요');
         } catch (error) {

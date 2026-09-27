@@ -1,5 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { GuardedDialogContent } from '@/components/guarded-dialog';
+import { useFormGuard } from '@/lib/form-guard';
+import { useRef, useState } from 'react';
 import { Star, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ExerciseOption } from '@myfit/types';
@@ -8,7 +10,6 @@ import { Input } from '@myfit/ui/input';
 import { SearchInput } from '@myfit/ui/fields';
 import {
   Dialog,
-  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -21,10 +22,14 @@ import { ErrorState, LoadingState } from '../resource-state';
 export function ExercisePicker({
   type = 'STRENGTH',
   onSelect,
+  onAfterSelect,
 }: {
   type?: 'STRENGTH' | 'CARDIO';
   onSelect: (exercise: ExerciseOption) => void | Promise<void>;
+  onAfterSelect?: () => void;
 }) {
+  const guard = useFormGuard();
+  const selected = useRef(false);
   const user = useUser();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -42,6 +47,7 @@ export function ExercisePicker({
     setBusy(true);
     try {
       await onSelect(exercise);
+      selected.current = true;
       setOpen(false);
     } catch (e) {
       toast.error(errorMessage(e));
@@ -50,14 +56,28 @@ export function ExercisePicker({
     }
   };
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(value) => {
+        if (value) selected.current = false;
+        setOpen(value);
+      }}
+    >
       <DialogTrigger asChild>
         <Button type="button" variant="outline">
           <Plus aria-hidden="true" />
           종목 선택
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[85dvh] overflow-y-auto">
+      <GuardedDialogContent
+        onCloseAutoFocus={(event) => {
+          if (selected.current && onAfterSelect) {
+            event.preventDefault();
+            requestAnimationFrame(onAfterSelect);
+          }
+        }}
+        className="max-h-[85dvh] overflow-y-auto"
+      >
         <DialogHeader>
           <DialogTitle>운동 종목 선택</DialogTitle>
           <DialogDescription>
@@ -174,6 +194,7 @@ export function ExercisePicker({
             직접 종목 추가
           </summary>
           <form
+            {...guard.props}
             className="mt-4 space-y-3"
             onSubmit={async (e) => {
               e.preventDefault();
@@ -188,6 +209,7 @@ export function ExercisePicker({
                   },
                 });
                 recordsChanged();
+                guard.markSaved();
                 await select(created);
                 setName('');
               } catch (error) {
@@ -225,7 +247,7 @@ export function ExercisePicker({
             </Button>
           </form>
         </details>
-      </DialogContent>
+      </GuardedDialogContent>
     </Dialog>
   );
 }

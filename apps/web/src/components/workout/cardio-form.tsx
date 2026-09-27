@@ -1,4 +1,5 @@
 'use client';
+import { useFormGuard } from '@/lib/form-guard';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -16,6 +17,7 @@ import { api, errorMessage, recordsChanged } from '@/lib/api';
 import { useResource } from '@/lib/use-resource';
 import { ErrorState, LoadingState } from '../resource-state';
 function Form({ initial }: { initial?: CardioRecord }) {
+  const guard = useFormGuard();
   const router = useRouter();
   const [exercise, setExercise] = useState<{
     id: string;
@@ -51,6 +53,7 @@ function Form({ initial }: { initial?: CardioRecord }) {
     <Card className="mt-7 max-w-2xl shadow-none">
       <CardContent>
         <form
+          {...guard.props}
           className="space-y-5"
           onSubmit={async (e) => {
             e.preventDefault();
@@ -60,6 +63,7 @@ function Form({ initial }: { initial?: CardioRecord }) {
             }
             setBusy(true);
             setError('');
+            let navigated = false;
             try {
               await api(initial ? `/cardio/${initial.id}` : '/cardio', {
                 method: initial ? 'PUT' : 'POST',
@@ -83,17 +87,20 @@ function Form({ initial }: { initial?: CardioRecord }) {
                   memo: memo || null,
                 },
               });
+              guard.markSaved();
               recordsChanged();
               toast.success('유산소 기록을 저장했어요');
               router.push('/workout/history');
+              navigated = true;
             } catch (error) {
               setError(errorMessage(error));
               toast.error(errorMessage(error));
             } finally {
-              setBusy(false);
+              if (!navigated) setBusy(false);
             }
           }}
           onKeyDown={(e) => {
+            if (!e.currentTarget.contains(e.target as Node)) return;
             if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
               e.preventDefault();
               e.currentTarget.requestSubmit();
@@ -105,6 +112,7 @@ function Form({ initial }: { initial?: CardioRecord }) {
               <ExercisePicker
                 type="CARDIO"
                 onSelect={(e) => {
+                  guard.markDirty();
                   setExercise(e);
                   setDistance('');
                   setReps('');
@@ -262,6 +270,7 @@ function Form({ initial }: { initial?: CardioRecord }) {
                   if (!confirm('유산소 기록을 삭제할까요?')) return;
                   try {
                     await api(`/cardio/${initial.id}`, { method: 'DELETE' });
+                    guard.markSaved();
                     recordsChanged();
                     router.push('/workout/history');
                   } catch (e) {
@@ -283,7 +292,7 @@ export function CardioForm({ id }: { id?: string }) {
     id ? `/cardio/${id}` : null,
   );
   return (
-    <main id="main-content" className="page-content">
+    <main id="main-content" tabIndex={-1} className="page-content">
       <h1>{id ? '유산소 기록 수정' : '유산소 기록'}</h1>
       {error && <ErrorState message={error} retry={reload} />}{' '}
       {id && !data && loading ? (

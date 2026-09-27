@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useUser } from './auth-context';
-import { api, errorMessage } from '@/lib/api';
+import { api, errorMessage, recordsChanged } from '@/lib/api';
 import { toast } from 'sonner';
 import { useTheme } from 'next-themes';
 import {
@@ -45,6 +45,7 @@ const navigation = [
   { href: '/calendar', label: '캘린더', icon: CalendarDays },
 ];
 function ThemeMenu() {
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const user = useUser();
   return (
@@ -68,6 +69,8 @@ function ThemeMenu() {
                   method: 'PATCH',
                   json: { theme: value.toUpperCase() },
                 });
+                recordsChanged();
+                router.refresh();
               } catch (error) {
                 setTheme(theme ?? 'system');
                 toast.error(errorMessage(error));
@@ -94,6 +97,10 @@ function ThemeMenu() {
 }
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const isActive = (href: string) =>
+    pathname === href ||
+    pathname.startsWith(`${href}/`) ||
+    (href === '/workout' && pathname === '/routines');
   const [loggingOut, setLoggingOut] = useState(false);
   const queryClient = useQueryClient();
   const user = useUser();
@@ -119,10 +126,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link
               key={href}
               href={href}
-              aria-current={pathname === href ? 'page' : undefined}
+              aria-current={isActive(href) ? 'page' : undefined}
               className={cn(
                 'flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm text-muted-foreground hover:bg-muted',
-                pathname === href &&
+                isActive(href) &&
                   'bg-secondary font-semibold text-secondary-foreground',
               )}
             >
@@ -238,10 +245,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link
               key={item.href}
               href={item.href}
-              aria-current={pathname === item.href ? 'page' : undefined}
+              aria-current={isActive(item.href) ? 'page' : undefined}
               className={cn(
                 'flex min-h-16 flex-col items-center justify-center gap-1 text-xs text-muted-foreground',
-                pathname === item.href &&
+                isActive(item.href) &&
                   'font-semibold text-secondary-foreground',
               )}
             >

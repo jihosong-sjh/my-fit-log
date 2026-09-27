@@ -435,7 +435,7 @@ export default function AnalyticsPage() {
     `/analytics?from=${periodStart(end, period)}&to=${end}`,
   );
   return (
-    <main id="main-content" className="page-content">
+    <main id="main-content" tabIndex={-1} className="page-content">
       <h1 className="mb-6">변화 살펴보기</h1>
       <div className="mb-7 flex flex-wrap items-end gap-4">
         <div className="flex flex-wrap gap-1">

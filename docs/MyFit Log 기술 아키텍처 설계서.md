@@ -4,6 +4,13 @@
 
 Phase 0~22는 코드·로컬 검증·배포 준비, Phase 23~29는 실제 운영 적용·검증이다. 문서·스크립트 작성과 실제 장비 검증을 별도 완료 상태로 기록한다. [문서 안내](README.md)
 
+## 구현 반영 (2026-09-27)
+
+- 실제 고정 버전·명령은 root package.json / pnpm-lock.yaml / README를 기준으로 한다.
+- 서버 상태는 사용자별 TanStack Query cache, 폼은 controlled inputs와 공통 미저장 guard, API 입력은 DTO ValidationPipe/class-validator로 검증한다. 초기 후보 React Hook Form/Zod는 현재 도입하지 않았다.
+- DB 제약·snapshot trigger, 서버 세션, 전체 운동 mutation의 revision/hash, IndexedDB 직렬 저장·재전송을 구현했다.
+- Phase별 구현·실행 증거는 [개발 작업 기록](development-log.md)에 기록한다. 아래 운영 구조·스크립트 예시는 해당 후속 Phase에서 검증할 설계다.
+
 ## 1. 문서 목적
 
 본 문서는 개인 운동·식단 관리 웹 서비스 **MyFit Log**의 기술 아키텍처를 정의한다.
@@ -93,10 +100,10 @@ Tailwind CSS
 shadcn/ui
 
 TanStack Query
-Zustand
+React local state / Context / useSyncExternalStore
 
-React Hook Form
-Zod
+Controlled forms / HTML constraints
+Nest ValidationPipe / class-validator
 
 Recharts
 ```
@@ -129,7 +136,7 @@ Server State
 
 UI State
       │
-      └─ Zustand
+      └─ React local state / Context
 
 Draft / Offline State
       │
@@ -174,7 +181,7 @@ Quick Add 상태
 Sidebar 상태
 ```
 
-Zustand 사용.
+실제 구현은 React local state/Context를 사용한다. 운동 Draft는 useSyncExternalStore에 연결한 전용 동기화 엔진으로 관리한다. 별도 전역 UI store가 필요하지 않아 초기 후보였던 Zustand는 도입하지 않았다.
 
 ---
 
@@ -258,7 +265,7 @@ TypeScript
 
 Prisma ORM
 
-Zod / Validation
+ValidationPipe / class-validator
 
 OpenAPI
 ```

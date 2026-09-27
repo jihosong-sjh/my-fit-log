@@ -1,4 +1,5 @@
 'use client';
+import { useFormGuard } from '@/lib/form-guard';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -47,6 +48,7 @@ function Editor({
   initialDate?: string;
   initialType?: MealType;
 }) {
+  const guard = useFormGuard();
   const router = useRouter();
   const [date, setDate] = useState(
     initial?.date ?? initialDate ?? localDate(new Date()),
@@ -56,6 +58,10 @@ function Editor({
   );
   const [memo, setMemo] = useState(initial?.memo ?? '');
   const [foods, setFoods] = useState<MealFoodRecord[]>(initial?.foods ?? []);
+  const changeFoods = (next: typeof foods) => {
+    guard.markDirty();
+    setFoods(next);
+  };
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const totals = nutritionTotal(
@@ -64,11 +70,13 @@ function Editor({
   const removeMeal = async () => {
     if (!initial) return;
     await api(`/meals/${initial.id}`, { method: 'DELETE' });
+    guard.markSaved();
     recordsChanged();
     router.push(`/diet?date=${date}`);
   };
   return (
     <form
+      {...guard.props}
       className="mt-7 max-w-3xl space-y-5"
       onSubmit={async (e) => {
         e.preventDefault();
@@ -78,6 +86,7 @@ function Editor({
         }
         setBusy(true);
         setError('');
+        let navigated = false;
         try {
           await api<MealRecord>(initial ? `/meals/${initial.id}` : '/meals', {
             method: initial ? 'PUT' : 'POST',
@@ -92,17 +101,20 @@ function Editor({
               })),
             },
           });
+          guard.markSaved();
           recordsChanged();
           toast.success('식단을 저장했어요');
           router.push(`/diet?date=${date}`);
+          navigated = true;
         } catch (e) {
           setError(errorMessage(e));
           toast.error(errorMessage(e));
         } finally {
-          setBusy(false);
+          if (!navigated) setBusy(false);
         }
       }}
       onKeyDown={(e) => {
+        if (!e.currentTarget.contains(e.target as Node)) return;
         if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
           e.preventDefault();
           e.currentTarget.requestSubmit();
@@ -162,7 +174,7 @@ function Editor({
                     required
                     value={food.servings}
                     onChange={(e) =>
-                      setFoods(
+                      changeFoods(
                         foods.map((f) =>
                           f.id === food.id
                             ? { ...f, servings: e.target.value }
@@ -184,7 +196,7 @@ function Editor({
                   label="음식 교체"
                   onSelect={(next) => {
                     if (next.id !== food.foodId)
-                      setFoods(
+                      changeFoods(
                         foods.map((f) =>
                           f.id === food.id
                             ? {
@@ -210,7 +222,7 @@ function Editor({
                       }
                       return;
                     }
-                    setFoods(foods.filter((f) => f.id !== food.id));
+                    changeFoods(foods.filter((f) => f.id !== food.id));
                   }}
                 >
                   음식 제거
@@ -225,7 +237,7 @@ function Editor({
                       list[index]!,
                       list[index - 1]!,
                     ];
-                    setFoods(list);
+                    changeFoods(list);
                   }}
                 >
                   위로
@@ -234,7 +246,9 @@ function Editor({
             </CardContent>
           </Card>
         ))}
-        <FoodPicker onSelect={(food) => setFoods([...foods, mealFood(food)])} />
+        <FoodPicker
+          onSelect={(food) => changeFoods([...foods, mealFood(food)])}
+        />
         <div>
           <label htmlFor="meal-memo" className="mb-2 block">
             식사 메모
@@ -304,7 +318,7 @@ export function MealEditor({
     id ? `/meals/${id}` : null,
   );
   return (
-    <main id="main-content" className="page-content">
+    <main id="main-content" tabIndex={-1} className="page-content">
       <h1>{id ? '식단 수정' : '식단 기록'}</h1>
       {error && <ErrorState message={error} retry={reload} />}{' '}
       {id && !data && loading ? (

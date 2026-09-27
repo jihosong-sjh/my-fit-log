@@ -20,7 +20,7 @@ export default function DashboardPage() {
     `/dashboard?date=${date}`,
   );
   return (
-    <main id="main-content" className="page-content">
+    <main id="main-content" tabIndex={-1} className="page-content">
       <DraftBanner />
       <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>

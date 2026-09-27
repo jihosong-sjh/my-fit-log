@@ -34,7 +34,7 @@ export default function CalendarPage() {
     setSelected(value === today.slice(0, 7) ? today : `${value}-01`);
   };
   return (
-    <main id="main-content" className="page-content">
+    <main id="main-content" tabIndex={-1} className="page-content">
       <h1 className="mb-7">기록 캘린더</h1>
       <div className="grid items-start gap-6 xl:grid-cols-[1.2fr_1fr]">
         <Card className="min-w-0 shadow-none">

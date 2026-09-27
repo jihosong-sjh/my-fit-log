@@ -1,4 +1,6 @@
 'use client';
+import { GuardedDialogContent } from '@/components/guarded-dialog';
+import { useFormGuard } from '@/lib/form-guard';
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowUp, ArrowDown, Trash2, ListChecks } from 'lucide-react';
@@ -10,7 +12,6 @@ import { NumberInput } from '@myfit/ui/fields';
 import { Card, CardContent } from '@myfit/ui/card';
 import {
   Dialog,
-  DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
@@ -27,6 +28,7 @@ function RoutineEditor({
   initial: RoutineRecord | null;
   onSaved: () => void;
 }) {
+  const guard = useFormGuard();
   const [name, setName] = useState(initial?.name ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
   const [exercises, setExercises] = useState(
@@ -38,10 +40,15 @@ function RoutineEditor({
       defaultReps: e.defaultReps?.toString() ?? '',
     })) ?? [],
   );
+  const changeExercises = (next: typeof exercises) => {
+    guard.markDirty();
+    setExercises(next);
+  };
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   return (
     <form
+      {...guard.props}
       className="space-y-5"
       onSubmit={async (e) => {
         e.preventDefault();
@@ -60,11 +67,13 @@ function RoutineEditor({
               })),
             },
           });
+          guard.markSaved();
           recordsChanged();
           toast.success('루틴을 저장했어요');
           onSaved();
         } catch (error) {
           setError(errorMessage(error));
+          toast.error(errorMessage(error));
         } finally {
           setBusy(false);
         }
@@ -110,7 +119,7 @@ function RoutineEditor({
                     rows[index]!,
                     rows[index - 1]!,
                   ];
-                  setExercises(rows);
+                  changeExercises(rows);
                 }}
               >
                 <ArrowUp aria-hidden="true" />
@@ -127,7 +136,7 @@ function RoutineEditor({
                     rows[index]!,
                     rows[index + 1]!,
                   ];
-                  setExercises(rows);
+                  changeExercises(rows);
                 }}
               >
                 <ArrowDown aria-hidden="true" />
@@ -138,7 +147,9 @@ function RoutineEditor({
                 type="button"
                 aria-label={`${exercise.name} 제거`}
                 onClick={() =>
-                  setExercises(exercises.filter((e) => e.key !== exercise.key))
+                  changeExercises(
+                    exercises.filter((e) => e.key !== exercise.key),
+                  )
                 }
               >
                 <Trash2 aria-hidden="true" />
@@ -162,7 +173,7 @@ function RoutineEditor({
                 required
                 value={exercise.defaultSets}
                 onChange={(e) =>
-                  setExercises(
+                  changeExercises(
                     exercises.map((row) =>
                       row.key === exercise.key
                         ? { ...row, defaultSets: e.target.value }
@@ -186,7 +197,7 @@ function RoutineEditor({
                 inputMode="numeric"
                 value={exercise.defaultReps}
                 onChange={(e) =>
-                  setExercises(
+                  changeExercises(
                     exercises.map((row) =>
                       row.key === exercise.key
                         ? { ...row, defaultReps: e.target.value }
@@ -201,7 +212,7 @@ function RoutineEditor({
       ))}
       <ExercisePicker
         onSelect={(exercise) =>
-          setExercises([
+          changeExercises([
             ...exercises,
             {
               key: crypto.randomUUID(),
@@ -233,7 +244,7 @@ export function Routines() {
     undefined,
   );
   return (
-    <main id="main-content" className="page-content">
+    <main id="main-content" tabIndex={-1} className="page-content">
       <div className="mb-7 flex items-center justify-between">
         <h1>운동 루틴</h1>
         <Button onClick={() => setEditing(null)}>루틴 만들기</Button>
@@ -312,7 +323,7 @@ export function Routines() {
           if (!open) setEditing(undefined);
         }}
       >
-        <DialogContent className="max-h-[85dvh] overflow-y-auto">
+        <GuardedDialogContent className="max-h-[85dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing ? '루틴 편집' : '루틴 만들기'}</DialogTitle>
             <DialogDescription>
@@ -326,7 +337,7 @@ export function Routines() {
               onSaved={() => setEditing(undefined)}
             />
           )}
-        </DialogContent>
+        </GuardedDialogContent>
       </Dialog>
     </main>
   );

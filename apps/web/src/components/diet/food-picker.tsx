@@ -1,4 +1,6 @@
 'use client';
+import { GuardedDialogContent } from '@/components/guarded-dialog';
+import { useFormGuard } from '@/lib/form-guard';
 import { useState } from 'react';
 import { Star, Plus, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -8,7 +10,6 @@ import { Input } from '@myfit/ui/input';
 import { NumberInput, SearchInput } from '@myfit/ui/fields';
 import {
   Dialog,
-  DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
@@ -25,6 +26,7 @@ function FoodEditor({
   initial: FoodOption | null;
   onSaved: (food: FoodOption) => void;
 }) {
+  const guard = useFormGuard();
   const [value, setValue] = useState({
     name: initial?.name ?? '',
     servingSize: initial?.servingSize ?? '100',
@@ -38,6 +40,7 @@ function FoodEditor({
   const [error, setError] = useState('');
   return (
     <form
+      {...guard.props}
       className="space-y-4 rounded-xl border p-4"
       onSubmit={async (e) => {
         e.preventDefault();
@@ -48,9 +51,11 @@ function FoodEditor({
             { method: initial ? 'PUT' : 'POST', json: value },
           );
           recordsChanged();
+          guard.markSaved();
           onSaved(food);
         } catch (e) {
           setError(errorMessage(e));
+          toast.error(errorMessage(e));
         } finally {
           setBusy(false);
         }
@@ -175,7 +180,7 @@ export function FoodPicker({
           {label}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[85dvh] overflow-y-auto">
+      <GuardedDialogContent className="max-h-[85dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>음식 선택</DialogTitle>
           <DialogDescription>
@@ -321,7 +326,7 @@ export function FoodPicker({
             }}
           />
         )}
-      </DialogContent>
+      </GuardedDialogContent>
     </Dialog>
   );
 }
