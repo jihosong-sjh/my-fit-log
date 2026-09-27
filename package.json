@@ -14,11 +14,16 @@
     "build": "pnpm -r --if-present build",
     "typecheck": "pnpm -r --if-present typecheck",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "setup:dev": "node scripts/setup-dev.mjs",
+    "dev:up": "docker compose --env-file .env.development -f compose.dev.yml up -d --build --wait",
+    "dev:down": "docker compose --env-file .env.development -f compose.dev.yml down",
+    "test:dev": "node scripts/verify-dev.mjs"
   },
   "devDependencies": {
-    "typescript": "5.9.3",
+    "@playwright/test": "1.58.2",
+    "@types/node": "22.19.15",
     "prettier": "3.8.2",
-    "@types/node": "22.19.15"
+    "typescript": "5.9.3"
   }
 }

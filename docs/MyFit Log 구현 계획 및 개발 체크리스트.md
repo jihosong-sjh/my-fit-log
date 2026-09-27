@@ -21,7 +21,7 @@
 
 ## 실행 기록
 
-2026-09-27: Phase 0 완료. 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
+2026-09-27: Phase 0~1 완료. 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
 
 ## 작업 구간과 완료 상태
 
@@ -151,15 +151,15 @@ myfit-db-dev
 
 ### 체크리스트
 
-- [ ] Web Dockerfile 생성
-- [ ] API Dockerfile 생성
-- [ ] PostgreSQL Container 추가
-- [ ] `compose.dev.yml` 생성
-- [ ] `myfit-network` 생성
-- [ ] PostgreSQL Volume 생성
-- [ ] `.env.development` 구성
-- [ ] Container 이름 정의
-- [ ] Container restart 정책 설정
+- [x] Web Dockerfile 생성
+- [x] API Dockerfile 생성
+- [x] PostgreSQL Container 추가
+- [x] `compose.dev.yml` 생성
+- [x] `myfit-network` 생성
+- [x] PostgreSQL Volume 생성
+- [x] `.env.development` 구성
+- [x] Container 이름 정의
+- [x] Container restart 정책 설정
 
 ---
 
@@ -176,9 +176,9 @@ PostgreSQL
 localhost:5432
 ```
 
-- [ ] Web Port 확인
-- [ ] API Port 확인
-- [ ] PostgreSQL Port 확인
+- [x] Web Port 확인
+- [x] API Port 확인
+- [x] PostgreSQL Port 확인
 
 ---
 
@@ -186,13 +186,13 @@ localhost:5432
 
 Frontend:
 
-- [ ] Next.js source volume mount
-- [ ] 파일 수정 시 HMR 확인
+- [x] Next.js source volume mount
+- [x] 파일 수정 시 HMR 확인
 
 API:
 
-- [ ] NestJS watch mode
-- [ ] 파일 수정 시 자동 reload 확인
+- [x] NestJS watch mode
+- [x] 파일 수정 시 자동 reload 확인
 
 ---
 
@@ -200,16 +200,16 @@ API:
 
 PostgreSQL:
 
-- [ ] `pg_isready`
+- [x] `pg_isready`
 
 API:
 
-- [ ] `/health/live`
-- [ ] `/health/ready`
+- [x] `/health/live`
+- [x] `/health/ready`
 
 Web:
 
-- [ ] Root HTTP health 확인
+- [x] Root HTTP health 확인
 
 ---
 
@@ -221,18 +221,18 @@ docker compose --env-file .env.development -f compose.dev.yml up -d
 
 한 번으로:
 
-- [ ] Web 실행
-- [ ] API 실행
-- [ ] DB 실행
-- [ ] Web → API 통신
-- [ ] API → DB 통신
+- [x] Web 실행
+- [x] API 실행
+- [x] DB 실행
+- [x] Web → API 통신
+- [x] API → DB 통신
 
 가능해야 한다.
 
 ### 추가 완료 조건
 
-- [ ] 개발·테스트·운영 DB와 volume 이름 분리
-- [ ] 개발 포트도 필요 범위에만 bind하고 개발용 비밀번호를 운영에 재사용하지 않음
+- [x] 개발·테스트·운영 DB와 volume 이름 분리
+- [x] 개발 포트도 필요 범위에만 bind하고 개발용 비밀번호를 운영에 재사용하지 않음
 
 ---
 
