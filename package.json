@@ -8,22 +8,32 @@
     "pnpm": "10.34.5"
   },
   "scripts": {
-    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "dev": "pnpm build:packages && node --env-file=.env.development scripts/dev.mjs",
     "dev:web": "pnpm --filter @myfit/web dev",
     "dev:api": "pnpm --filter @myfit/api dev",
-    "build": "pnpm -r --if-present build",
-    "typecheck": "pnpm -r --if-present typecheck",
+    "build": "pnpm db:generate && pnpm -r --if-present build",
+    "typecheck": "pnpm build:packages && pnpm -r --if-present typecheck",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "setup:dev": "node scripts/setup-dev.mjs",
     "dev:up": "docker compose --env-file .env.development -f compose.dev.yml up -d --build --wait",
     "dev:down": "docker compose --env-file .env.development -f compose.dev.yml down",
-    "test:dev": "node scripts/verify-dev.mjs"
+    "test:dev": "node scripts/verify-dev.mjs",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:seed": "prisma db seed",
+    "build:packages": "pnpm db:generate && pnpm --filter @myfit/types --filter @myfit/database build",
+    "test:unit": "tsx --test packages/types/src/*.test.ts",
+    "test:db": "node --env-file=.env.development scripts/test-db.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.58.2",
     "@types/node": "22.19.15",
+    "dotenv": "17.3.1",
     "prettier": "3.8.2",
+    "prisma": "7.10.0",
+    "tsx": "4.21.0",
     "typescript": "5.9.3"
   }
 }

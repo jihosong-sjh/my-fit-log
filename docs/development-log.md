@@ -18,3 +18,13 @@
 - `pnpm test:dev` 실제 Chromium에서 소스 변경 후 페이지 재탐색 없이 HMR 반영·원복, Nest 소스 변경 후 새 API 응답·원복 확인. 같은 origin `/api/v1` 200, DB readiness 200.
 - 발견·수정: slim 이미지에서 셸 하위 프로세스 정리가 누락되어 Nest watch가 EADDRINUSE 발생. `nest start --watch --no-shell` 적용 후 전체 재검증 통과.
 - `pnpm typecheck` 성공. HMR 검증은 원본 파일을 finally에서 복원한다.
+
+## Phase 2 — Database / Prisma (2026-09-27)
+
+- Prisma 7.10.0 + PostgreSQL driver adapter, 19개 모델, 날짜/UTC/Decimal/FK/unique/index/CHECK와 삭제 정책을 구현.
+- DB trigger로 카탈로그 소유권·입력 유형·archive·snapshot·불변 소유자/부모 경계 추가. `UserStore`는 인증된 userId를 받는 읽기·archive·루틴 복사 저장 기반이며 인증 엔드포인트는 Phase 5 범위.
+- 공용 catalogKey seed 13 strength + 7 cardio. 계정·비밀번호·개인정보 seed 없음.
+- `pnpm db:generate`, 빈 개발 DB `pnpm db:migrate`, `pnpm db:seed` 반복 성공. `pnpm db:migrate:dev --name verify_initial`은 drift·추가 migration 없이 in sync.
+- 새 `myfit-test-postgres` volume / myfit_test DB에서 migration 후 `pnpm test:db` 6개 통합 테스트 통과. 제약 거부, 기본 설정, 타 사용자 카탈로그 차단, archive, snapshot 유지, 루틴 복사, cascade/Restrict/SetNull 검증.
+- `pnpm test:unit` 3개 통과: Seoul 날짜 경계, 월요일 주간, Decimal 합산, 기록일 평균, 미설정 목표, 완료 세트 volume, 중복 운동일, 영양 snapshot/pace.
+- `pnpm typecheck` 성공. 운영·인증·도메인 CRUD·Draft는 완료 처리하지 않음.

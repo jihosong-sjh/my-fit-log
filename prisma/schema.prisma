@@ -1,0 +1,352 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "./generated"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Theme {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
+enum TrackingType {
+  STRENGTH
+  CARDIO
+}
+
+enum CardioInputMode {
+  DISTANCE
+  REPETITIONS
+  DURATION
+}
+
+enum WorkoutStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum ServingUnit {
+  G
+  ML
+  PIECE
+  PACK
+  SERVING
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
+
+model User {
+  id                String             @id @default(uuid()) @db.Uuid
+  email             String             @unique
+  passwordHash      String
+  name              String
+  sessions          Session[]
+  goal              UserGoal?
+  preference        UserPreference?
+  exercises         Exercise[]
+  exerciseFavorites ExerciseFavorite[]
+  workouts          WorkoutSession[]
+  routines          WorkoutRoutine[]
+  cardioRecords     CardioRecord[]
+  foods             Food[]
+  foodFavorites     FoodFavorite[]
+  meals             Meal[]
+  mealPresets       MealPreset[]
+  bodyRecords       BodyRecord[]
+  createdAt         DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime           @updatedAt @db.Timestamptz(3)
+}
+
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  expiresAt DateTime @db.Timestamptz(3)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model UserGoal {
+  userId            String   @id @db.Uuid
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetWeight      Decimal? @db.Decimal(7, 2)
+  dailyCalories     Decimal? @db.Decimal(10, 2)
+  proteinGoal       Decimal? @db.Decimal(10, 2)
+  carbGoal          Decimal? @db.Decimal(10, 2)
+  fatGoal           Decimal? @db.Decimal(10, 2)
+  weeklyWorkoutGoal Int?
+  createdAt         DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime @updatedAt @db.Timestamptz(3)
+}
+
+model UserPreference {
+  userId    String   @id @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme     Theme    @default(SYSTEM)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+}
+
+model Exercise {
+  id               String             @id @default(uuid()) @db.Uuid
+  ownerId          String?            @db.Uuid
+  owner            User?              @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  catalogKey       String?            @unique
+  name             String
+  trackingType     TrackingType
+  cardioInputMode  CardioInputMode?
+  category         String
+  muscleGroup      String
+  archivedAt       DateTime?          @db.Timestamptz(3)
+  favorites        ExerciseFavorite[]
+  workoutExercises WorkoutExercise[]
+  routineExercises RoutineExercise[]
+  cardioRecords    CardioRecord[]
+  createdAt        DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime           @updatedAt @db.Timestamptz(3)
+
+  @@index([ownerId, archivedAt])
+}
+
+model ExerciseFavorite {
+  userId     String   @db.Uuid
+  exerciseId String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+
+  @@id([userId, exerciseId])
+  @@index([exerciseId])
+}
+
+model WorkoutSession {
+  id               String            @id @default(uuid()) @db.Uuid
+  userId           String            @db.Uuid
+  user             User              @relation(fields: [userId], references: [id], onDelete: Restrict)
+  sourceRoutineId  String?           @db.Uuid
+  sourceRoutine    WorkoutRoutine?   @relation(fields: [sourceRoutineId], references: [id], onDelete: SetNull)
+  date             DateTime          @db.Date
+  status           WorkoutStatus     @default(IN_PROGRESS)
+  startedAt        DateTime          @db.Timestamptz(3)
+  endedAt          DateTime?         @db.Timestamptz(3)
+  durationSeconds  Int?
+  memo             String?
+  revision         Int               @default(1)
+  lastMutationId   String            @db.Uuid
+  lastMutationHash String
+  exercises        WorkoutExercise[]
+  createdAt        DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime          @updatedAt @db.Timestamptz(3)
+
+  @@index([userId, date])
+  @@index([userId, status, updatedAt])
+}
+
+model WorkoutExercise {
+  id                   String         @id @default(uuid()) @db.Uuid
+  workoutSessionId     String         @db.Uuid
+  workoutSession       WorkoutSession @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
+  exerciseId           String         @db.Uuid
+  exercise             Exercise       @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  exerciseNameSnapshot String
+  order                Int
+  sets                 WorkoutSet[]
+  createdAt            DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime       @updatedAt @db.Timestamptz(3)
+
+  @@unique([workoutSessionId, order])
+  @@index([exerciseId])
+}
+
+model WorkoutSet {
+  id                String          @id @default(uuid()) @db.Uuid
+  workoutExerciseId String          @db.Uuid
+  workoutExercise   WorkoutExercise @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
+  setNumber         Int
+  weight            Decimal         @default(0) @db.Decimal(7, 2)
+  reps              Int?
+  rpe               Decimal?        @db.Decimal(4, 1)
+  completed         Boolean         @default(false)
+  createdAt         DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime        @updatedAt @db.Timestamptz(3)
+
+  @@unique([workoutExerciseId, setNumber])
+}
+
+model WorkoutRoutine {
+  id          String            @id @default(uuid()) @db.Uuid
+  userId      String            @db.Uuid
+  user        User              @relation(fields: [userId], references: [id], onDelete: Restrict)
+  name        String
+  description String?
+  exercises   RoutineExercise[]
+  workouts    WorkoutSession[]
+  createdAt   DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime          @updatedAt @db.Timestamptz(3)
+
+  @@index([userId, updatedAt])
+}
+
+model RoutineExercise {
+  id          String         @id @default(uuid()) @db.Uuid
+  routineId   String         @db.Uuid
+  routine     WorkoutRoutine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  exerciseId  String         @db.Uuid
+  exercise    Exercise       @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  order       Int
+  defaultSets Int
+  defaultReps Int?
+  createdAt   DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime       @updatedAt @db.Timestamptz(3)
+
+  @@unique([routineId, order])
+  @@index([exerciseId])
+}
+
+model CardioRecord {
+  id                   String   @id @default(uuid()) @db.Uuid
+  userId               String   @db.Uuid
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  date                 DateTime @db.Date
+  exerciseId           String   @db.Uuid
+  exercise             Exercise @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  exerciseNameSnapshot String
+  durationSeconds      Int
+  distanceKm           Decimal? @db.Decimal(8, 3)
+  repetitions          Int?
+  calories             Decimal? @db.Decimal(10, 2)
+  averageHeartRate     Int?
+  memo                 String?
+  createdAt            DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([userId, date])
+  @@index([userId, exerciseId, date])
+  @@index([exerciseId])
+}
+
+model Food {
+  id          String           @id @default(uuid()) @db.Uuid
+  ownerId     String?          @db.Uuid
+  owner       User?            @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  catalogKey  String?          @unique
+  name        String
+  servingSize Decimal          @db.Decimal(10, 3)
+  servingUnit ServingUnit
+  calories    Decimal          @db.Decimal(10, 2)
+  protein     Decimal          @db.Decimal(10, 2)
+  carbs       Decimal          @db.Decimal(10, 2)
+  fat         Decimal          @db.Decimal(10, 2)
+  archivedAt  DateTime?        @db.Timestamptz(3)
+  favorites   FoodFavorite[]
+  mealFoods   MealFood[]
+  presetFoods MealPresetFood[]
+  createdAt   DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime         @updatedAt @db.Timestamptz(3)
+
+  @@index([ownerId, archivedAt])
+}
+
+model FoodFavorite {
+  userId    String   @db.Uuid
+  foodId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  food      Food     @relation(fields: [foodId], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@id([userId, foodId])
+  @@index([foodId])
+}
+
+model Meal {
+  id        String     @id @default(uuid()) @db.Uuid
+  userId    String     @db.Uuid
+  user      User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+  date      DateTime   @db.Date
+  mealType  MealType
+  memo      String?
+  foods     MealFood[]
+  createdAt DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime   @updatedAt @db.Timestamptz(3)
+
+  @@index([userId, date, mealType])
+}
+
+model MealFood {
+  id                  String      @id @default(uuid()) @db.Uuid
+  mealId              String      @db.Uuid
+  meal                Meal        @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  foodId              String      @db.Uuid
+  food                Food        @relation(fields: [foodId], references: [id], onDelete: Restrict)
+  order               Int
+  foodNameSnapshot    String
+  servingSizeSnapshot Decimal     @db.Decimal(10, 3)
+  servingUnitSnapshot ServingUnit
+  caloriesSnapshot    Decimal     @db.Decimal(10, 2)
+  proteinSnapshot     Decimal     @db.Decimal(10, 2)
+  carbsSnapshot       Decimal     @db.Decimal(10, 2)
+  fatSnapshot         Decimal     @db.Decimal(10, 2)
+  servings            Decimal     @db.Decimal(10, 3)
+  createdAt           DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime    @updatedAt @db.Timestamptz(3)
+
+  @@unique([mealId, order])
+  @@index([foodId])
+}
+
+model MealPreset {
+  id              String           @id @default(uuid()) @db.Uuid
+  userId          String           @db.Uuid
+  user            User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  name            String
+  defaultMealType MealType?
+  foods           MealPresetFood[]
+  createdAt       DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime         @updatedAt @db.Timestamptz(3)
+
+  @@index([userId, updatedAt])
+}
+
+model MealPresetFood {
+  id        String     @id @default(uuid()) @db.Uuid
+  presetId  String     @db.Uuid
+  preset    MealPreset @relation(fields: [presetId], references: [id], onDelete: Cascade)
+  foodId    String     @db.Uuid
+  food      Food       @relation(fields: [foodId], references: [id], onDelete: Restrict)
+  order     Int
+  servings  Decimal    @db.Decimal(10, 3)
+  createdAt DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime   @updatedAt @db.Timestamptz(3)
+
+  @@unique([presetId, order])
+  @@index([foodId])
+}
+
+model BodyRecord {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  date       DateTime @db.Date
+  weight     Decimal  @db.Decimal(7, 2)
+  bodyFat    Decimal? @db.Decimal(4, 1)
+  muscleMass Decimal? @db.Decimal(7, 2)
+  waist      Decimal? @db.Decimal(7, 2)
+  memo       String?
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(3)
+
+  @@unique([userId, date])
+}

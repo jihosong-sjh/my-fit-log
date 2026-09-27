@@ -21,7 +21,7 @@
 
 ## 실행 기록
 
-2026-09-27: Phase 0~1 완료. 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
+2026-09-27: Phase 0~2 완료. 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
 
 ## 작업 구간과 완료 상태
 
@@ -244,33 +244,33 @@ docker compose --env-file .env.development -f compose.dev.yml up -d
 
 필드 목록을 이 문서에 중복 정의하지 않는다. [데이터 모델 명세](<MyFit Log 데이터 모델 명세.md>)의 19개 엔티티를 기준으로 구현한다.
 
-- [ ] User / Session / UserGoal / UserPreference
-- [ ] Exercise / ExerciseFavorite
-- [ ] WorkoutSession / WorkoutExercise / WorkoutSet
-- [ ] WorkoutRoutine / RoutineExercise / CardioRecord
-- [ ] Food / FoodFavorite / Meal / MealFood
-- [ ] MealPreset / MealPresetFood / BodyRecord
-- [ ] Prisma 설치·Client 생성·DATABASE_URL 연결·개발 migration
-- [ ] FK / unique / index / CHECK / 삭제·archive 정책
-- [ ] 날짜·UTC·Decimal·단위·주간 집계 계약을 공통 코드로 정의
-- [ ] 일반 사용자에게 다른 사용자의 데이터·개인 카탈로그 연결을 허용하지 않는 저장 경계
+- [x] User / Session / UserGoal / UserPreference
+- [x] Exercise / ExerciseFavorite
+- [x] WorkoutSession / WorkoutExercise / WorkoutSet
+- [x] WorkoutRoutine / RoutineExercise / CardioRecord
+- [x] Food / FoodFavorite / Meal / MealFood
+- [x] MealPreset / MealPresetFood / BodyRecord
+- [x] Prisma 설치·Client 생성·DATABASE_URL 연결·개발 migration
+- [x] FK / unique / index / CHECK / 삭제·archive 정책
+- [x] 날짜·UTC·Decimal·단위·주간 집계 계약을 공통 코드로 정의
+- [x] 일반 사용자에게 다른 사용자의 데이터·개인 카탈로그 연결을 허용하지 않는 저장 경계
 
 ### Seed
 
-- [ ] 고정 catalogKey로 멱등 공용 운동 seed
-- [ ] Bench Press / Squat / Deadlift / Shoulder Press / Lat Pulldown / Barbell Row / Pull Up
-- [ ] Leg Press / Leg Extension / Leg Curl / Lateral Raise / Biceps Curl / Triceps Pushdown
-- [ ] 유산소 7종: 러닝 / 줄넘기 / 걷기 / 사이클 / 계단 오르기 / 수영 / 기타 유산소
-- [ ] Exercise.trackingType / cardioInputMode와 고정 catalogKey 설정 (데이터 모델의 seed 표 준수)
-- [ ] seed 재실행 후 웨이트 13종·유산소 7종 중복 없음
-- [ ] 운영 seed에 기본 비밀번호·샘플 개인정보를 넣지 않음
+- [x] 고정 catalogKey로 멱등 공용 운동 seed
+- [x] Bench Press / Squat / Deadlift / Shoulder Press / Lat Pulldown / Barbell Row / Pull Up
+- [x] Leg Press / Leg Extension / Leg Curl / Lateral Raise / Biceps Curl / Triceps Pushdown
+- [x] 유산소 7종: 러닝 / 줄넘기 / 걷기 / 사이클 / 계단 오르기 / 수영 / 기타 유산소
+- [x] Exercise.trackingType / cardioInputMode와 고정 catalogKey 설정 (데이터 모델의 seed 표 준수)
+- [x] seed 재실행 후 웨이트 13종·유산소 7종 중복 없음
+- [x] 운영 seed에 기본 비밀번호·샘플 개인정보를 넣지 않음
 
 ### 완료 조건
 
-- [ ] 빈 DB에서 모든 migration 적용과 Client 생성 성공
-- [ ] seed 재실행 시 중복 없음
-- [ ] 유효하지 않은 수치·중복 순서·중복 일자 신체 기록·깨진 FK 거부
-- [ ] snapshot 보존, 루틴 복사, cascade/Restrict 정책 검증
+- [x] 빈 DB에서 모든 migration 적용과 Client 생성 성공
+- [x] seed 재실행 시 중복 없음
+- [x] 유효하지 않은 수치·중복 순서·중복 일자 신체 기록·깨진 FK 거부
+- [x] snapshot 보존, 루틴 복사, cascade/Restrict 정책 검증
 
 ---
 

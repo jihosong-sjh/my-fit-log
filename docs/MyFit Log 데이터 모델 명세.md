@@ -1,6 +1,6 @@
 # MyFit Log 데이터 모델 명세
 
-정리 기준일: 2026-09-27. 본 문서는 MVP의 필드명·관계·제약·집계 규칙의 기준이다. 아직 실행 가능한 Prisma schema나 migration을 생성한 상태는 아니다.
+정리 기준일: 2026-09-27. 본 문서는 MVP의 필드명·관계·제약·집계 규칙의 기준이다. 19개 엔티티의 실행 가능한 Prisma schema와 migration을 구현·검증했다. 인증·도메인 API와 Draft의 완료 여부는 아래 및 구현 체크리스트를 따른다.
 
 관련 문서: [PRD](<개인 운동·식단 관리 웹페이지 PRD.md>), [기술 아키텍처](<MyFit Log 기술 아키텍처 설계서.md>), [구현 체크리스트](<MyFit Log 구현 계획 및 개발 체크리스트.md>).
 
@@ -400,17 +400,25 @@ IndexedDB Draft는 로컬 저장 구조이며 별도 Prisma 엔티티가 아니�
 
 ## 10. 모델 구현 완료 조건
 
-- [ ] 19개 엔티티의 Prisma schema와 FK/unique/index/CHECK migration 작성
-- [ ] 빈 PostgreSQL에서 migration 적용과 Prisma Client 생성 성공
+- [x] 19개 엔티티의 Prisma schema와 FK/unique/index/CHECK migration 작성
+- [x] 빈 PostgreSQL에서 migration 적용과 Prisma Client 생성 성공
 - [ ] 계정 생성 시 기본 목표·설정 생성, 공용 운동 seed 재실행 시 중복 없음
 - [ ] 웨이트 13종 + 유산소 7종(러닝·줄넘기 포함) seed, 유형별 검색·최근 기록·즐겨찾기
 - [ ] 러닝 거리/pace·줄넘기 횟수 저장·수정·조회·삭제와 유형에 맞지 않는 필드 차단
 - [ ] 타 사용자 기록 및 비공개 카탈로그 연결 차단
 - [ ] 세션 만료·로그아웃·비밀번호 재설정 후 인증 실패
 - [ ] Food 수정·archive·프리셋 수정 후 과거 영양 기록 불변
-- [ ] Exercise 이름 수정·archive 후 웨이트/유산소 과거 기록 이름 snapshot 보존
-- [ ] 루틴 수정·삭제 후 기존 운동 기록 불변
+- [x] Exercise 이름 수정·archive 후 웨이트/유산소 과거 기록 이름 snapshot 보존
+- [x] 루틴 수정·삭제 후 기존 운동 기록 불변
 - [ ] 같은 날 BodyRecord 중복 방지와 부분 수정 시 선택 필드 보존
-- [ ] 날짜 경계·빈 기간·미기록일·미설정 목표·소수 합산 테스트
+- [x] 날짜 경계·빈 기간·미기록일·미설정 목표·소수 합산 테스트
 - [ ] Draft 응답 유실·재전송·충돌·삭제·완료 경합 테스트
 - [ ] 격리 DB 백업·복구 후 관계·행 수·대표 집계 일치
+
+## 구현 보강 (Phase 2)
+
+- PostgreSQL BEFORE trigger가 카탈로그 소유권·archive·trackingType 및 snapshot 생성을 보강한다. 기존 참조를 유지하는 기록 수정은 archive 후에도 가능하다.
+- 소유자와 부모 FK의 재할당은 금지한다. Exercise trackingType/cardioInputMode는 불변이다.
+- Decimal NaN도 CHECK로 거부한다. 영양 snapshot과 운동명은 같은 참조를 유지하는 수정에서 원본을 보존한다.
+- API의 인증·소유권 가드는 여전히 필수이며 Phase 5 이후 구현한다. 현재 외부에 개인 데이터 쓰기 엔드포인트를 제공하지 않는다.
+- [검증 명령과 결과](development-log.md).

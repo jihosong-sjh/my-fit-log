@@ -1,6 +1,7 @@
 packages:
   - apps/*
   - packages/*
+  - prisma
 onlyBuiltDependencies:
   - '@nestjs/core'
   - '@prisma/engines'

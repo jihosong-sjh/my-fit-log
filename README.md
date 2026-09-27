@@ -56,3 +56,23 @@ DB는 localhost:5432, 개발 전용 `myfit_dev` / `myfit-dev-postgres` volume을
 
 개발 환경 회귀 검증: `pnpm exec playwright install chromium` 후 `pnpm test:dev`.
 이 명령은 실행 중인 개발 컨테이너와 소스 변경 권한이 필요하며 Web/API 파일을 잠시 수정했다가 복원합니다.
+
+## Database / Prisma
+
+```sh
+pnpm build:packages   # Prisma Client와 공통 패키지 생성
+pnpm db:migrate       # 개발 DB에 커밋된 migration 적용
+pnpm db:seed          # 공용 운동 20종, 재실행 가능
+pnpm db:migrate:dev --name describe_change  # schema 변경 시 개발 migration 작성
+pnpm test:unit
+# 테스트 DB는 개발/운영 DB와 분리됩니다.
+docker compose --env-file .env.development -f compose.dev.yml --profile test up -d --wait db-test
+pnpm test:db
+```
+
+Prisma 명령은 `.env.development`를 읽습니다. 이미 설정한 `DATABASE_URL`은 덮어쓰지 않습니다.
+`test:db`는 localhost:5433/myfit_test만 허용하고 테스트에서 만든 사용자 데이터만 정리합니다.
+원시 Prisma Client는 서버 전용입니다. 인증된 사용자 ID로 `UserStore`를 생성하며 클라이언트의 userId나 Prisma 입력을 그대로 전달하지 않습니다.
+DB trigger는 카탈로그 소유권·유형·archive·snapshot·소유자 변경을 추가로 보호합니다. 인증 가드는 Phase 5에서 연결합니다.
+
+호스트 앱 실행은 `pnpm dev`가 개발 env를 로드합니다. Docker 앱과 같은 포트를 쓰므로 먼저 `docker compose --env-file .env.development -f compose.dev.yml stop web api`로 앱 컨테이너만 중지합니다.
