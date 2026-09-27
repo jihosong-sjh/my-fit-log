@@ -32,7 +32,8 @@
     "test:web": "pnpm build:packages && pnpm --filter @myfit/api build && node --env-file=.env.development scripts/test-web.mjs",
     "account:create": "pnpm build:packages && pnpm --filter @myfit/api build && node --env-file=.env.development scripts/account.mjs",
     "account:reset": "pnpm account:create --reset",
-    "sessions:prune": "pnpm build:packages && pnpm --filter @myfit/api build && node --env-file=.env.development scripts/account.mjs --prune"
+    "sessions:prune": "pnpm build:packages && pnpm --filter @myfit/api build && node --env-file=.env.development scripts/account.mjs --prune",
+    "test:draft": "tsx --test apps/web/src/lib/draft/*.test.ts"
   },
   "devDependencies": {
     "@eslint/js": "9.39.4",

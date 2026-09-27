@@ -146,3 +146,11 @@
 - 체중 바로가기는 weight만 전송하는 빠른 입력을 사용해 기존 선택 필드를 보존한다. 물·독립 메모는 노출하지 않는다.
 - 격리 브라우저 1개 종합 흐름 통과: desktop 웨이트 완료/식단 저장, 390px mobile 체중/유산소 저장 후 네 종류 DB 행을 실제 확인.
 - lint/typecheck 통과. Phase 7의 마지막 Quick Add 연동 체크 완료. Phase 0~13 완료이며 Draft·UX 검증을 이어간다.
+
+## Phase 14-A — Draft 저장·동기화 엔진 (2026-09-27)
+
+- IndexedDB schemaVersion 1, userId+workoutId 키, baseRevision/pendingMutationId/pendingPayload/상태/편집 순번을 저장하는 계층 작성.
+- 직렬 로컬 쓰기와 요청 큐, pending snapshot 고정 재전송, ACK 이후 후속 입력 보존, 401/404/409 보존, validation 400 수정 재시도, 완료 ACK 이후에만 기기 Draft 정리.
+- `pnpm test:draft` 5개 통과: 응답 유실 동일 요청 재시도/전송 중 후속 수정, 인증·삭제·충돌 보존, 저장소 실패 시 서버 전송 차단·재시도, 완료 응답 재시도, 완료 정리 도중 새 수정.
+- 로컬 쓰기와 완료 삭제도 같은 큐 순서를 사용하여 늦게 온 정리가 새 입력을 삭제하지 않도록 검증했다.
+- 이 커밋은 엔진/저장 계층 작업 단위다. 실제 브라우저 IndexedDB·복구 UI·로그아웃 연동은 다음 작업에서 검증한다.
