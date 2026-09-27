@@ -688,10 +688,10 @@ Last Workout
 
 상단:
 
-- [ ] Daily Calories
-- [ ] Protein
-- [ ] Carbs
-- [ ] Fat
+- [x] Daily Calories
+- [x] Protein
+- [x] Carbs
+- [x] Fat
 
 ---
 
@@ -706,36 +706,36 @@ Last Workout
 간식
 ```
 
-- [ ] Meal 생성
-- [ ] Meal 수정
-- [ ] Meal 삭제
+- [x] Meal 생성
+- [x] Meal 수정
+- [x] Meal 삭제
 
 ---
 
 ### Food
 
-- [ ] Food Search
-- [ ] Food 생성
-- [ ] 영양정보 입력
-- [ ] Serving Size
-- [ ] Amount 변경
-- [ ] Food 삭제
+- [x] Food Search
+- [x] Food 생성
+- [x] 영양정보 입력
+- [x] Serving Size
+- [x] Amount 변경
+- [x] Food 삭제
 
 ---
 
 ### Recent Food
 
-- [ ] 최근 음식 조회
-- [ ] 사용 횟수 기반 정렬
-- [ ] 빠른 추가
+- [x] 최근 음식 조회
+- [x] 사용 횟수 기반 정렬
+- [x] 빠른 추가
 
 ---
 
 ### Favorite Food
 
-- [ ] 즐겨찾기 등록
-- [ ] 즐겨찾기 해제
-- [ ] 상단 노출
+- [x] 즐겨찾기 등록
+- [x] 즐겨찾기 해제
+- [x] 상단 노출
 
 ---
 
@@ -743,9 +743,9 @@ Last Workout
 
 MVP에 포함되는 P1 기능.
 
-- [ ] Preset 생성
-- [ ] 여러 Food 저장
-- [ ] One-click 추가
+- [x] Preset 생성
+- [x] 여러 Food 저장
+- [x] One-click 추가
 
 예:
 
@@ -759,12 +759,12 @@ MVP에 포함되는 P1 기능.
 
 ### 추가 완료 조건
 
-- [ ] FoodFavorite / MealPreset / MealPresetFood CRUD와 재로그인 후 유지
-- [ ] servings와 기준 제공량·단위의 의미를 UI/API/DB에 일치시킴
-- [ ] 영양 snapshot은 서버에서 생성; Food 수정·archive 후 과거 식사 불변
-- [ ] 프리셋 적용은 최신 음식 값으로 새 Meal 생성; 일부 실패 시 전체 rollback
-- [ ] 같은 날 같은 식사 구분 여러 건 허용, 화면에서 합산
-- [ ] 최근순·빈도순 조회, archive 음식 제외
+- [x] FoodFavorite / MealPreset / MealPresetFood CRUD와 재로그인 후 유지
+- [x] servings와 기준 제공량·단위의 의미를 UI/API/DB에 일치시킴
+- [x] 영양 snapshot은 서버에서 생성; Food 수정·archive 후 과거 식사 불변
+- [x] 프리셋 적용은 최신 음식 값으로 새 Meal 생성; 일부 실패 시 전체 rollback
+- [x] 같은 날 같은 식사 구분 여러 건 허용, 화면에서 합산
+- [x] 최근순·빈도순 조회, archive 음식 제외
 
 ---
 
