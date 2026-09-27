@@ -28,3 +28,14 @@
 - 새 `myfit-test-postgres` volume / myfit_test DB에서 migration 후 `pnpm test:db` 6개 통합 테스트 통과. 제약 거부, 기본 설정, 타 사용자 카탈로그 차단, archive, snapshot 유지, 루틴 복사, cascade/Restrict/SetNull 검증.
 - `pnpm test:unit` 3개 통과: Seoul 날짜 경계, 월요일 주간, Decimal 합산, 기록일 평균, 미설정 목표, 완료 세트 volume, 중복 운동일, 영양 snapshot/pace.
 - `pnpm typecheck` 성공. 운영·인증·도메인 CRUD·Draft는 완료 처리하지 않음.
+
+## Phase 3 — API 기반 구조 (2026-09-27)
+
+- ConfigModule 검증, PrismaModule 연결·종료 처리, 전역 ValidationPipe/filter/interceptor, URI versioning, Swagger 구성.
+- 요구한 15개 Nest 모듈 등록. Health와 시스템 정보만 엔드포인트를 제공하며 인증·도메인 모듈의 기능 구현은 Phase 5 이후다.
+- `/api/v1` 성공 `{data}`, 오류 `{error:{code,message}}`. 검증 400, 인증 401, 권한 403, 조회 404, 충돌 409, 제한 429, 내부 500, 준비 실패 503 계약.
+- API 로그는 requestId/method/status/duration/code만 허용. 예외 원문·URL/query/body/header/cookie를 기록하지 않음. Next 개발 요청·서버 함수·브라우저 로그 전달도 비활성화.
+- `pnpm test:api` 5개 통과: HTTP envelope/version/OpenAPI/DTO/상태코드, DB 장애 모사, 오류·로그의 비밀정보 제거, 잘못된 config 거부.
+- `pnpm test:api:smoke`에서 실제 개발 PostgreSQL 중단 시 live 200 / ready 503, DB 재시작 후 ready 200 및 Next 동일 origin API/OpenAPI 통신 확인.
+- `pnpm test:dev`의 실제 HMR/Nest watch 회귀 통과. `pnpm typecheck`, `pnpm build` 성공.
+- Swagger는 개발 환경에서 `http://localhost:3000/api/docs`, JSON은 `/api/docs-json`. 운영에서는 비활성화.

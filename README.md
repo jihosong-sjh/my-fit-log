@@ -76,3 +76,12 @@ Prisma 명령은 `.env.development`를 읽습니다. 이미 설정한 `DATABASE_
 DB trigger는 카탈로그 소유권·유형·archive·snapshot·소유자 변경을 추가로 보호합니다. 인증 가드는 Phase 5에서 연결합니다.
 
 호스트 앱 실행은 `pnpm dev`가 개발 env를 로드합니다. Docker 앱과 같은 포트를 쓰므로 먼저 `docker compose --env-file .env.development -f compose.dev.yml stop web api`로 앱 컨테이너만 중지합니다.
+
+## API 기반 검증
+
+- API: `http://localhost:4000/api/v1`, 브라우저는 `http://localhost:3000/api/v1` 사용
+- OpenAPI: `http://localhost:3000/api/docs` (개발 전용)
+- `pnpm test:api`: DTO·응답·오류·로그·설정 테스트
+- `pnpm test:api:smoke`: 실행 중인 개발 DB를 잠시 중단하고 반드시 재시작하여 readiness 복구 확인
+
+인증 및 도메인 모듈은 경계만 마련했으며 실제 개인 기록 API는 Phase 5 이후 구현합니다.

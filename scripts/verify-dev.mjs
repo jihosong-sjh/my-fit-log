@@ -14,7 +14,7 @@ async function waitFor(check) {
   throw new Error('Timed out waiting for development reload');
 }
 const webPath = 'apps/web/src/app/page.tsx';
-const apiPath = 'apps/api/src/app.module.ts';
+const apiPath = 'apps/api/src/health/health.module.ts';
 const webSource = await readFile(webPath, 'utf8');
 const apiSource = await readFile(apiPath, 'utf8');
 const browser = await chromium.launch();

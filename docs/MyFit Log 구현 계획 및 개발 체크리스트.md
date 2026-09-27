@@ -21,7 +21,7 @@
 
 ## 실행 기록
 
-2026-09-27: Phase 0~2 완료. 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
+2026-09-27: Phase 0~3 완료. 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
 
 ## 작업 구간과 완료 상태
 
@@ -280,13 +280,13 @@ docker compose --env-file .env.development -f compose.dev.yml up -d
 
 ### NestJS 기본 구성
 
-- [ ] ConfigModule
-- [ ] PrismaModule
-- [ ] ValidationPipe
-- [ ] Global Exception Filter
-- [ ] Logging
-- [ ] API Versioning
-- [ ] OpenAPI / Swagger
+- [x] ConfigModule
+- [x] PrismaModule
+- [x] ValidationPipe
+- [x] Global Exception Filter
+- [x] Logging
+- [x] API Versioning
+- [x] OpenAPI / Swagger
 
 Base URL:
 
@@ -298,21 +298,21 @@ Base URL:
 
 ### Module
 
-- [ ] AuthModule
-- [ ] UserModule
-- [ ] GoalModule
-- [ ] SettingsModule
-- [ ] CardioModule
-- [ ] CalendarModule
-- [ ] WorkoutModule
-- [ ] ExerciseModule
-- [ ] RoutineModule
-- [ ] FoodModule
-- [ ] MealModule
-- [ ] BodyModule
-- [ ] DashboardModule
-- [ ] AnalyticsModule
-- [ ] HealthModule
+- [x] AuthModule
+- [x] UserModule
+- [x] GoalModule
+- [x] SettingsModule
+- [x] CardioModule
+- [x] CalendarModule
+- [x] WorkoutModule
+- [x] ExerciseModule
+- [x] RoutineModule
+- [x] FoodModule
+- [x] MealModule
+- [x] BodyModule
+- [x] DashboardModule
+- [x] AnalyticsModule
+- [x] HealthModule
 
 ---
 
@@ -337,15 +337,15 @@ Base URL:
 }
 ```
 
-- [ ] Error Code 표준화
-- [ ] HTTP Status 표준화
-- [ ] Validation Error 형식 통일
+- [x] Error Code 표준화
+- [x] HTTP Status 표준화
+- [x] Validation Error 형식 통일
 
 ### 추가 완료 조건
 
-- [ ] /api/v1은 Next.js를 통해 동일 origin으로 proxy
-- [ ] /health/live는 프로세스, /health/ready는 DB 연결까지 검사
-- [ ] 내부 오류·로그에 비밀번호·세션 토큰·연결 문자열을 노출하지 않음
+- [x] /api/v1은 Next.js를 통해 동일 origin으로 proxy
+- [x] /health/live는 프로세스, /health/ready는 DB 연결까지 검사
+- [x] 내부 오류·로그에 비밀번호·세션 토큰·연결 문자열을 노출하지 않음
 
 ---
 

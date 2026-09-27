@@ -1,6 +1,11 @@
 import type { NextConfig } from 'next';
 const config: NextConfig = {
   transpilePackages: ['@myfit/ui'],
+  logging: {
+    incomingRequests: false,
+    serverFunctions: false,
+    browserToTerminal: false,
+  },
   async rewrites() {
     return [
       {

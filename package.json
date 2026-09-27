@@ -25,7 +25,9 @@
     "db:seed": "prisma db seed",
     "build:packages": "pnpm db:generate && pnpm --filter @myfit/types --filter @myfit/database build",
     "test:unit": "tsx --test packages/types/src/*.test.ts",
-    "test:db": "node --env-file=.env.development scripts/test-db.mjs"
+    "test:db": "node --env-file=.env.development scripts/test-db.mjs",
+    "test:api": "pnpm build:packages && pnpm --filter @myfit/api test",
+    "test:api:smoke": "node scripts/verify-api.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.58.2",

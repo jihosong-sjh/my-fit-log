@@ -4,3 +4,5 @@ node_modules
 dist
 prisma/generated
 docs
+
+dist-test
