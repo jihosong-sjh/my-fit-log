@@ -1,3 +1,4 @@
+import { Public } from '../auth/auth.guard';
 import { Controller, Get, Module, VERSION_NEUTRAL } from '@nestjs/common';
 import {
   ApiOkResponse,
@@ -6,6 +7,7 @@ import {
 } from '@nestjs/swagger';
 import { PrismaService } from '../prisma/prisma.module';
 import { PublicError } from '../common/errors';
+@Public()
 @ApiTags('health')
 @Controller({ path: 'health', version: VERSION_NEUTRAL })
 export class HealthController {

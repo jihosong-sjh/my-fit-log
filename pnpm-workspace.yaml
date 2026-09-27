@@ -9,5 +9,6 @@ onlyBuiltDependencies:
   - esbuild
   - sharp
   - '@tailwindcss/oxide'
+  - argon2
 ignoredBuiltDependencies:
   - '@scarf/scarf'

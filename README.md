@@ -103,3 +103,20 @@ pnpm build
 브라우저 테스트는 375/390/430/768/1024/1440px, Light/Dark/System,
 키보드 포커스·다이얼로그·시트·탭·입력·Toast를 검증합니다. 스크린샷은 `test-results`에 생성합니다.
 Pretendard와 shadcn/ui의 라이선스는 해당 소스 디렉터리에 보존했습니다.
+
+## 개인 계정과 세션
+
+```sh
+pnpm account:create --email you@example.com --name 사용자
+pnpm account:reset --email you@example.com
+pnpm sessions:prune
+```
+
+계정 명령은 화면에 표시되지 않는 비밀번호 프롬프트를 사용합니다(12~128자).
+자동화에서는 `--password-stdin`을 사용하고 비밀번호를 명령 인자에 넣지 않습니다.
+공개 회원가입은 없으며 `/login`에서 로그인합니다. 계정 재설정은 기존 세션을 모두 폐기합니다.
+`.env.development`에는 최소 32자의 `SESSION_SECRET`이 필요하며 `pnpm setup:dev`가 새 파일 생성 시 이를 만듭니다.
+
+`pnpm test:api`와 `pnpm test:web`는 실행 중인 격리 테스트 DB(5433/myfit_test)가 필요합니다.
+브라우저 검증은 전용 서버 3100/4100을 자동 기동·종료합니다. 테스트 계정은 생성 후 삭제합니다.
+`pnpm dev`는 호스트 Web/API, Docker의 개발 DB를 함께 사용합니다.

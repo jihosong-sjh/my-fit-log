@@ -7,6 +7,8 @@ export default defineConfig([
     '**/.next/**',
     '**/dist/**',
     '**/dist-test/**',
+    '**/dist-dev/**',
+    '**/.next-test/**',
     'prisma/generated/**',
     'playwright-report/**',
     'test-results/**',

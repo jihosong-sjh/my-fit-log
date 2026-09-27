@@ -19,5 +19,20 @@ export function validateEnvironment(env: Record<string, unknown>) {
   const nodeEnv = env.NODE_ENV ?? 'development';
   if (!['development', 'test', 'production'].includes(String(nodeEnv)))
     throw new Error('Invalid NODE_ENV');
+  const secret = env.SESSION_SECRET;
+  if (typeof secret !== 'string' || secret.length < 32)
+    throw new Error('SESSION_SECRET must contain at least 32 characters');
+  const appUrl = env.APP_URL;
+  try {
+    const url = new URL(String(appUrl));
+    if (
+      url.origin !== appUrl ||
+      !['http:', 'https:'].includes(url.protocol) ||
+      (nodeEnv === 'production' && url.protocol !== 'https:')
+    )
+      throw new Error();
+  } catch {
+    throw new Error('APP_URL must be an origin (HTTPS in production)');
+  }
   return { ...env, DATABASE_URL: databaseUrl, PORT: port, NODE_ENV: nodeEnv };
 }

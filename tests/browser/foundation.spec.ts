@@ -93,7 +93,7 @@ test('input, search, tabs, dialog focus trap, sheet and toast', async ({
 test('mobile navigation, quick add and system theme', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
-  await page.goto('/');
+  await page.goto('/design-system');
   await expect(page.locator('html')).toHaveClass(/dark/);
   await page
     .getByRole('button', { name: '빠른 기록', exact: true })
@@ -105,7 +105,5 @@ test('mobile navigation, quick add and system theme', async ({ page }) => {
     .getByRole('navigation', { name: '모바일 메뉴' })
     .getByRole('link', { name: '운동', exact: true })
     .click();
-  await expect(
-    page.getByRole('heading', { name: '운동', exact: true }),
-  ).toBeVisible();
+  await expect(page).toHaveURL(/login/);
 });

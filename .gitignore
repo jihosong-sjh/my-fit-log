@@ -11,3 +11,6 @@ test-results/
 .DS_Store
 prisma/generated/
 dist-test/
+
+dist-dev/
+.next-test/

@@ -50,3 +50,13 @@
 - 스크린샷 검토에서 Tailwind 공용 소스 경로 누락 발견·수정. 버튼 높이 44px 회귀 검증 추가.
 - 최신 Docker 이미지 재빌드 후 healthy, `pnpm test:dev` HMR·Nest reload와 `pnpm test:web` 재검증 통과. `pnpm typecheck`, `pnpm build`, `pnpm lint`, `pnpm format:check` 성공.
 - 실제 스마트폰 검증/성능은 Phase 28이며 이 기록은 로컬 Chromium 검증이다.
+
+## Phase 5 — Authentication (2026-09-27)
+
+- Argon2id(64 MiB, 3 iterations), 서버 관리 계정 생성/재설정/만료 세션 정리 명령. 비밀번호는 숨김 프롬프트 또는 stdin으로 입력하며 인자/로그에 남기지 않는다.
+- User/Goal/Preference 동시 생성. 세션은 256-bit 무작위 토큰의 HMAC만 DB에 저장, 고정 30일 만료. 재설정과 로그인의 row lock으로 재설정 경합 시 이전 비밀번호로 새 세션 생성 방지.
+- 기본 거부 인증 가드, 공개 health/system/login/logout 명시, 쓰기 Origin 검사, IP/계정 로그인 제한. 보호 페이지 서버 인증과 `/login`, 로그인 실패 안내, refresh 유지, logout 연결.
+- `pnpm test:api` 9개 통과: Argon2id/defaults/Origin/로그인 실패, DB 세션/API 재시작, secret 교체, 만료/logout, 비밀번호 재설정, rate limit, 실제 CLI stdin 계정 생성 및 기반 회귀.
+- `pnpm test:web`: 기존 기반 8개 통과. 인증 테스트의 alert 선택자를 Next route announcer와 구분하도록 수정 후 `--grep 'unauthorized redirect'` 재실행 통과(실패 입력 유지→로그인→refresh→logout→접근 차단).
+- 브라우저 테스트 서버 3100/4100과 myfit_test DB를 자동으로 기동/종료, 개발 DB와 분리. API dev/build 출력도 분리하여 watch와 검증 간 충돌 방지.
+- `pnpm lint`, `pnpm typecheck`, `pnpm build` 성공. Secure cookie는 production 설정에서 헤더 속성 검증; 실제 HTTPS/Tailscale은 Phase 24.

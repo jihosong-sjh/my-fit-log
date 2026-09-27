@@ -1,7 +1,10 @@
 'use client';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useUser } from './auth-context';
+import { api, errorMessage } from '@/lib/api';
+import { toast } from 'sonner';
 import { useTheme } from 'next-themes';
 import {
   Activity,
@@ -33,7 +36,7 @@ import {
 } from '@myfit/ui/dropdown-menu';
 import { cn } from '@myfit/ui/utils';
 const navigation = [
-  { href: '/', label: '오늘', icon: LayoutDashboard },
+  { href: '/dashboard', label: '오늘', icon: LayoutDashboard },
   { href: '/workout', label: '운동', icon: Dumbbell },
   { href: '/diet', label: '식단', icon: Utensils },
   { href: '/body', label: '신체', icon: Scale },
@@ -116,6 +119,8 @@ function ThemeMenu() {
 }
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const user = useUser();
+  const router = useRouter();
   return (
     <div className="min-h-dvh">
       <a
@@ -182,6 +187,22 @@ export function AppShell({ children }: { children: ReactNode }) {
             나를 알아가는 작은 기록
           </p>
           <div className="flex items-center gap-1">
+            {user && (
+              <Button
+                variant="ghost"
+                onClick={async () => {
+                  try {
+                    await api('/auth/logout', { method: 'POST' });
+                    router.replace('/login');
+                    router.refresh();
+                  } catch (error) {
+                    toast.error(errorMessage(error));
+                  }
+                }}
+              >
+                로그아웃
+              </Button>
+            )}
             <ThemeMenu />
             <div className="md:hidden">
               <DropdownMenu>

@@ -13,14 +13,14 @@ async function waitFor(check) {
   }
   throw new Error('Timed out waiting for development reload');
 }
-const webPath = 'apps/web/src/app/page.tsx';
+const webPath = 'apps/web/src/app/design-system/page.tsx';
 const apiPath = 'apps/api/src/health/health.module.ts';
 const webSource = await readFile(webPath, 'utf8');
 const apiSource = await readFile(apiPath, 'utf8');
 const browser = await chromium.launch();
 try {
   const page = await browser.newPage();
-  await page.goto('http://localhost:3000');
+  await page.goto('http://localhost:3000/design-system');
   assert.equal(
     (await page.request.get('http://localhost:4000/health/live')).status(),
     200,

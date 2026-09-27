@@ -21,7 +21,7 @@
 
 ## 실행 기록
 
-2026-09-27: Phase 0~4 완료. 후속 요청으로 Phase 15까지 같은 방식으로 진행한다. 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
+2026-09-27: Phase 0~5 완료. 후속 요청으로 Phase 15까지 같은 방식으로 진행한다. 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
 
 ## 작업 구간과 완료 상태
 
@@ -460,41 +460,41 @@ Mobile:
 
 ### Backend
 
-- [ ] 개인 계정 생성·비밀번호 재설정 관리 명령 (공개 회원가입 없음)
-- [ ] Login
-- [ ] Logout
-- [ ] Session 생성
-- [ ] HttpOnly Cookie
-- [ ] Secure Cookie
-- [ ] Password Argon2id Hash
-- [ ] Auth Guard
+- [x] 개인 계정 생성·비밀번호 재설정 관리 명령 (공개 회원가입 없음)
+- [x] Login
+- [x] Logout
+- [x] Session 생성
+- [x] HttpOnly Cookie
+- [x] Secure Cookie
+- [x] Password Argon2id Hash
+- [x] Auth Guard
 
 ---
 
 ### Frontend
 
-- [ ] `/login`
-- [ ] Login Form
-- [ ] 인증 상태 조회
-- [ ] Unauthorized Redirect
-- [ ] Logout
+- [x] `/login`
+- [x] Login Form
+- [x] 인증 상태 조회
+- [x] Unauthorized Redirect
+- [x] Logout
 
 ---
 
 ### 완료 조건
 
-- [ ] 로그인하지 않으면 Dashboard 접근 불가
-- [ ] 로그인 후 Dashboard 이동
-- [ ] Browser refresh 후 로그인 유지
-- [ ] Logout 후 Session 제거
+- [x] 로그인하지 않으면 Dashboard 접근 불가
+- [x] 로그인 후 Dashboard 이동
+- [x] Browser refresh 후 로그인 유지
+- [x] Logout 후 Session 제거
 
 ### 추가 완료 조건
 
-- [ ] DB Session tokenHash·만료·폐기와 서버 재시작 후 세션 유지
-- [ ] SameSite·Origin 검증·로그인 rate limit·소유권 검사 기본 적용
-- [ ] 개발 HTTP / 운영 HTTPS cookie 차이 검증
-- [ ] 비밀번호 재설정·SESSION_SECRET 변경 시 기존 세션 무효화
-- [ ] 만료·로그아웃·다른 사용자 접근·인증 실패 테스트
+- [x] DB Session tokenHash·만료·폐기와 서버 재시작 후 세션 유지
+- [x] SameSite·Origin 검증·로그인 rate limit·소유권 검사 기본 적용
+- [x] 개발 HTTP / 운영 HTTPS cookie 차이 검증
+- [x] 비밀번호 재설정·SESSION_SECRET 변경 시 기존 세션 무효화
+- [x] 만료·로그아웃·다른 사용자 접근·인증 실패 테스트
 
 ---
 

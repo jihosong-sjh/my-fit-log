@@ -1,3 +1,4 @@
+import { Public } from './auth/auth.guard';
 import { Controller, Get, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
@@ -18,6 +19,7 @@ import { MealModule } from './meal/meal.module';
 import { BodyModule } from './body/body.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+@Public()
 @ApiTags('system')
 @Controller({ path: '', version: '1' })
 class InfoController {

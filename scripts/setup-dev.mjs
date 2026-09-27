@@ -13,6 +13,7 @@ DATABASE_URL=postgresql://myfit:${password}@localhost:5432/myfit_dev
 TEST_DATABASE_URL=postgresql://myfit:${password}@localhost:5433/myfit_test
 INTERNAL_API_URL=http://localhost:4000
 APP_URL=http://localhost:3000
+SESSION_SECRET=${randomBytes(32).toString('hex')}
 `,
     { mode: 0o600 },
   );

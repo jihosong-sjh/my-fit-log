@@ -1,3 +1,4 @@
+import { Public } from '../src/auth/auth.guard';
 import 'reflect-metadata';
 import { after, before, test, mock } from 'node:test';
 import assert from 'node:assert/strict';
@@ -11,6 +12,7 @@ import { validateEnvironment } from '../src/common/config';
 class ProbeDto {
   @IsInt() @Min(1) count!: number;
 }
+@Public()
 @Controller({ path: 'test-probe', version: '1' })
 class ProbeController {
   @Post() create(@Body() data: ProbeDto) {
@@ -65,7 +67,10 @@ test('versioned success envelope, request ID and OpenAPI', async () => {
 test('strict DTO validation and standardized status/code without echoing inputs', async () => {
   const valid = await fetch(`${base}/api/v1/test-probe`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: {
+      'content-type': 'application/json',
+      origin: 'http://localhost:3000',
+    },
     body: JSON.stringify({ count: 2 }),
   });
   assert.equal(valid.status, 201);
@@ -77,7 +82,10 @@ test('strict DTO validation and standardized status/code without echoing inputs'
   ]) {
     const invalid = await fetch(`${base}/api/v1/test-probe`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: {
+        'content-type': 'application/json',
+        origin: 'http://localhost:3000',
+      },
       body: JSON.stringify(body),
     });
     assert.equal(invalid.status, 400);
