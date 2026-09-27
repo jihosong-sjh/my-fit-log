@@ -16,7 +16,6 @@ import {
   ChartNoAxesCombined,
   CalendarDays,
   Settings,
-  Plus,
   Sun,
   Moon,
   Monitor,
@@ -24,7 +23,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { Button } from '@myfit/ui/button';
-import { BottomSheet } from '@myfit/ui/bottom-sheet';
+import { QuickAdd } from './quick-add';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,49 +43,6 @@ const navigation = [
   { href: '/analytics', label: '분석', icon: ChartNoAxesCombined },
   { href: '/calendar', label: '캘린더', icon: CalendarDays },
 ];
-function QuickAdd({ mobile = false }: { mobile?: boolean }) {
-  return (
-    <BottomSheet
-      title="빠른 기록"
-      description="운동·식단·신체 기록 기능을 준비하고 있어요."
-      trigger={
-        <Button
-          aria-label="빠른 기록"
-          className={
-            mobile
-              ? 'size-12 -translate-y-3 rounded-full bg-brand text-white shadow-md hover:bg-brand/90'
-              : 'w-full bg-brand text-white hover:bg-brand/90'
-          }
-        >
-          <Plus aria-hidden="true" />
-          {!mobile && '빠른 기록'}
-        </Button>
-      }
-    >
-      <div className="grid grid-cols-2 gap-3">
-        {[
-          { name: '웨이트', icon: Dumbbell },
-          { name: '유산소', icon: Activity },
-          { name: '식단', icon: Utensils },
-          { name: '체중', icon: Scale },
-        ].map(({ name, icon: Icon }) => (
-          <Button
-            key={name}
-            variant="outline"
-            disabled
-            className="h-20 flex-col"
-          >
-            <Icon aria-hidden="true" />
-            {name}
-          </Button>
-        ))}
-      </div>
-      <p className="mt-4 caption">
-        기록이 가능해지면 이곳에서 바로 추가할 수 있어요.
-      </p>
-    </BottomSheet>
-  );
-}
 function ThemeMenu() {
   const { theme, setTheme } = useTheme();
   const user = useUser();
@@ -173,9 +129,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </nav>
-        <div className="mt-7">
-          <QuickAdd />
-        </div>
         <div className="mt-auto space-y-2 border-t pt-5">
           <Link
             href="/settings"
@@ -206,6 +159,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             나를 알아가는 작은 기록
           </p>
           <div className="flex items-center gap-1">
+            <div className="hidden md:block">
+              <QuickAdd />
+            </div>
             {user && (
               <Button
                 variant="ghost"

@@ -16,6 +16,7 @@ import { EmptyState } from '@myfit/ui/summary';
 import { api, errorMessage, recordsChanged } from '@/lib/api';
 import { useResource } from '@/lib/use-resource';
 import { TrendChart } from '../trend-chart';
+import { QuickWeight } from './quick-weight';
 import { ErrorState, LoadingState } from '../resource-state';
 function BodyForm({
   date,
@@ -120,7 +121,10 @@ function BodyForm({
     </form>
   );
 }
-export function BodyPage({ initialDate }: { initialDate?: string } = {}) {
+export function BodyPage({
+  initialDate,
+  quick = false,
+}: { initialDate?: string; quick?: boolean } = {}) {
   const today = localDate(new Date());
   const [date, setDate] = useState(initialDate ?? today);
   const [end, setEnd] = useState(initialDate ?? today);
@@ -135,7 +139,7 @@ export function BodyPage({ initialDate }: { initialDate?: string } = {}) {
       <div className="grid items-start gap-6 xl:grid-cols-[1fr_1.4fr]">
         <Card className="shadow-none">
           <CardHeader>
-            <CardTitle>오늘의 몸 상태</CardTitle>
+            <CardTitle>{quick ? '빠른 체중 기록' : '오늘의 몸 상태'}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="mb-5">
@@ -154,7 +158,9 @@ export function BodyPage({ initialDate }: { initialDate?: string } = {}) {
             {selected.error && (
               <ErrorState message={selected.error} retry={selected.reload} />
             )}{' '}
-            {selected.loading ? (
+            {quick ? (
+              <QuickWeight date={date} />
+            ) : selected.loading ? (
               <LoadingState />
             ) : (
               selected.data !== undefined && (

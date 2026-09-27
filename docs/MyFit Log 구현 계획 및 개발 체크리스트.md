@@ -21,7 +21,7 @@
 
 ## 실행 기록
 
-2026-09-27: Phase 0~6, 8~11 완료. Phase 7 기능 검증 완료, Calendar·Quick Add 연동은 Phase 12~13에서 확인한다. Phase 15까지 진행 중이며 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
+2026-09-27: Phase 0~13 완료. Phase 14~15 진행 중이며 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
 
 ## 작업 구간과 완료 상태
 
@@ -662,7 +662,7 @@ Last Workout
 - [x] 러닝 등 DISTANCE 종목은 거리, 줄넘기는 repetitions 입력; 입력 방식에 맞지 않는 필드는 거부
 - [x] 거리 입력 시 pace 계산, 거리 없음 처리
 - [x] 줄넘기 시간·횟수 기록과 이력 수정·삭제, 거리·pace 요구 없음
-- [ ] Quick Add에서 유산소 입력 연결 (Phase 13 연동 대기)
+- [x] Quick Add에서 유산소 입력 연결
 - [x] Dashboard 운동시간·주간 운동일·Analytics·Calendar에 반영
 
 ### 기록 보존과 완료 조건
@@ -1057,16 +1057,16 @@ Body
 
 ### Desktop
 
-- [ ] Header Quick Add
+- [x] Header Quick Add
 
 ### Mobile
 
-- [ ] Bottom Navigation 중앙 +
+- [x] Bottom Navigation 중앙 +
 
 ### 추가 완료 조건
 
-- [ ] 운동·식단·체중·유산소 모두 실제 저장 흐름에 연결
-- [ ] 물·독립 메모 버튼은 MVP에서 노출하지 않음
+- [x] 운동·식단·체중·유산소 모두 실제 저장 흐름에 연결
+- [x] 물·독립 메모 버튼은 MVP에서 노출하지 않음
 
 ---
 
