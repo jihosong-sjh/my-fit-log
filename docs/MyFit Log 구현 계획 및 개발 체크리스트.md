@@ -671,7 +671,7 @@ Last Workout
 - [ ] 카탈로그 삭제는 archive, 세션 내 Exercise 제거는 해당 하위 세트 삭제
 - [ ] 루틴 변경·삭제가 기존 세션을 바꾸지 않음
 - [ ] 완료 세트만 volume에 포함; 완료 세션만 주간 웨이트 집계
-- [ ] Workout revision과 mutationId 계약을 API부터 적용
+- [x] Workout revision과 mutationId 계약을 API부터 적용
 - [ ] 로그인 → 운동 시작 → 80kg × 8 → 완료 → DB 저장 → 최소 Dashboard 반영 검증
 
 ---

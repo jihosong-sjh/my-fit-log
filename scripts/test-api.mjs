@@ -11,6 +11,7 @@ execFileSync('pnpm', ['exec', 'prisma', 'migrate', 'deploy'], {
   env,
   stdio: 'inherit',
 });
+execFileSync('pnpm', ['db:seed'], { env, stdio: 'inherit' });
 execFileSync('pnpm', ['--filter', '@myfit/api', 'build'], {
   env,
   stdio: 'inherit',

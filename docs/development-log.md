@@ -69,3 +69,13 @@
 - `pnpm test:api` 총 10개 통과: 초기 null, 부분 수정, theme 유지, 다른 계정 격리, 범위·타입·userId 주입 거부 포함.
 - 격리 브라우저 테스트 `settings persist` 통과: 이름/열량/주간 목표/다크 저장→reload→logout→login 후 유지, 초기 미설정 목표 빈칸.
 - `pnpm lint`, `pnpm typecheck`, `pnpm format:check` 통과. 이후 단계에서도 공통 조회·오류·loading 컴포넌트를 재사용한다.
+
+## Phase 7-A — 운동 저장 API (2026-09-27)
+
+- Exercise 검색/최근/즐겨찾기/커스텀/archive/이전 기록, Workout 전체 스냅샷 저장/목록/조회/삭제, Routine CRUD, Cardio CRUD와 pace를 구현.
+- 운동 수정은 advisory transaction lock + revision + canonical payload hash + mutationId. 마지막 동일 요청 재전송은 재적용하지 않으며 충돌 409, 삭제된 기존 기록 404, 타 사용자 조회·연결 404.
+- 종목/세트 순서 재배치 시 임시 순번을 사용하고 기존 ID·이름 snapshot을 유지한다. 완료 시 완료 세트 최소 1개, 서버 duration 계산, 완료 세트 volume 적용.
+- 최소 `/dashboard?date=`에 완료 웨이트/유산소 시간·세트·volume 연결. 전체 Dashboard 완료 판정은 Phase 10.
+- `pnpm test:api` 총 15개 통과. 운동 replay/canonical 순서/동시 수정/rollback/타 사용자 ID/순서·삭제/루틴 독립성/보관 이력/러닝 pace/줄넘기 유형 검증 추가.
+- 발견·수정: native upsert의 BEFORE INSERT trigger가 보관된 기존 종목 수정도 막음. 기존 WorkoutExercise는 명시적 UPDATE로 처리해 보관 후 이력 수정 검증 통과.
+- lint/typecheck 통과. UI 연결과 브라우저 기록 흐름은 다음 작업 단위에서 완료한다.
