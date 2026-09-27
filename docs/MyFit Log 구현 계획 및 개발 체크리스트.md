@@ -547,10 +547,10 @@ Mobile:
 /workout
 ```
 
-- [ ] 오늘 운동 상태
-- [ ] 최근 운동
-- [ ] Routine 목록
-- [ ] 운동 시작 버튼
+- [x] 오늘 운동 상태
+- [x] 최근 운동
+- [x] Routine 목록
+- [x] 운동 시작 버튼
 
 ---
 
@@ -560,20 +560,20 @@ Mobile:
 /workout/new
 ```
 
-- [ ] 빈 Workout 생성
-- [ ] Routine 기반 생성
-- [ ] 운동 시작시간 저장
+- [x] 빈 Workout 생성
+- [x] Routine 기반 생성
+- [x] 운동 시작시간 저장
 
 ---
 
 ### Exercise 추가
 
-- [ ] Exercise Search
-- [ ] Recent Exercise
-- [ ] Favorite Exercise
-- [ ] Custom Exercise 생성
-- [ ] Exercise 삭제
-- [ ] Exercise 순서 변경
+- [x] Exercise Search
+- [x] Recent Exercise
+- [x] Favorite Exercise
+- [x] Custom Exercise 생성
+- [x] Exercise 삭제
+- [x] Exercise 순서 변경
 
 ---
 
@@ -588,11 +588,11 @@ RPE
 Complete
 ```
 
-- [ ] Set 추가
-- [ ] Set 삭제
-- [ ] Set 복사
-- [ ] Set 완료
-- [ ] 이전 Set 값 자동 입력
+- [x] Set 추가
+- [x] Set 삭제
+- [x] Set 복사
+- [x] Set 완료
+- [x] 이전 Set 값 자동 입력
 
 ---
 
@@ -610,20 +610,20 @@ Last Workout
 
 표시.
 
-- [ ] 최근 Workout 조회 API
-- [ ] 이전 Weight 표시
-- [ ] 이전 Reps 표시
+- [x] 최근 Workout 조회 API
+- [x] 이전 Weight 표시
+- [x] 이전 Reps 표시
 
 ---
 
 ### Workout Complete
 
-- [ ] 운동 종료
-- [ ] 종료시간 기록
-- [ ] Duration 계산
-- [ ] 총 Sets
-- [ ] 총 Volume
-- [ ] 운동 Summary
+- [x] 운동 종료
+- [x] 종료시간 기록
+- [x] Duration 계산
+- [x] 총 Sets
+- [x] 총 Volume
+- [x] 운동 Summary
 
 ---
 
@@ -633,10 +633,10 @@ Last Workout
 /workout/history
 ```
 
-- [ ] 날짜별 목록
-- [ ] Workout 상세보기
-- [ ] 수정
-- [ ] 삭제
+- [x] 날짜별 목록
+- [x] Workout 상세보기
+- [x] 수정
+- [x] 삭제
 
 ---
 
@@ -646,33 +646,33 @@ Last Workout
 /routines
 ```
 
-- [ ] Routine 생성
-- [ ] Routine 수정
-- [ ] Routine 삭제
-- [ ] Exercise 추가
-- [ ] Exercise 순서 변경
-- [ ] Routine으로 운동 시작
+- [x] Routine 생성
+- [x] Routine 수정
+- [x] Routine 삭제
+- [x] Exercise 추가
+- [x] Exercise 순서 변경
+- [x] Routine으로 운동 시작
 
 ### 유산소 (MVP P1)
 
-- [ ] CardioRecord 생성·조회·수정·삭제를 /workout 및 History에서 제공
-- [ ] 공통 Exercise의 CARDIO seed에서 러닝 / 줄넘기 / 걷기 / 사이클 / 계단 오르기 / 수영 / 기타 유산소 선택
-- [ ] 웨이트·유산소 필터, 최근 사용·즐겨찾기·커스텀 유산소 생성
-- [ ] 날짜·운동시간 필수, 거리·칼로리·평균 심박·메모 선택
-- [ ] 러닝 등 DISTANCE 종목은 거리, 줄넘기는 repetitions 입력; 입력 방식에 맞지 않는 필드는 거부
-- [ ] 거리 입력 시 pace 계산, 거리 없음 처리
-- [ ] 줄넘기 시간·횟수 기록과 이력 수정·삭제, 거리·pace 요구 없음
-- [ ] Quick Add에서 유산소 입력 연결
-- [ ] Dashboard 운동시간·주간 운동일·Analytics·Calendar에 반영
+- [x] CardioRecord 생성·조회·수정·삭제를 /workout 및 History에서 제공
+- [x] 공통 Exercise의 CARDIO seed에서 러닝 / 줄넘기 / 걷기 / 사이클 / 계단 오르기 / 수영 / 기타 유산소 선택
+- [x] 웨이트·유산소 필터, 최근 사용·즐겨찾기·커스텀 유산소 생성
+- [x] 날짜·운동시간 필수, 거리·칼로리·평균 심박·메모 선택
+- [x] 러닝 등 DISTANCE 종목은 거리, 줄넘기는 repetitions 입력; 입력 방식에 맞지 않는 필드는 거부
+- [x] 거리 입력 시 pace 계산, 거리 없음 처리
+- [x] 줄넘기 시간·횟수 기록과 이력 수정·삭제, 거리·pace 요구 없음
+- [ ] Quick Add에서 유산소 입력 연결 (Phase 13 연동 대기)
+- [ ] Dashboard 운동시간·주간 운동일·Analytics·Calendar에 반영 (최소 Dashboard 시간 반영 완료, Phase 10~12 확장 대기)
 
 ### 기록 보존과 완료 조건
 
-- [ ] ExerciseFavorite 저장·해제, 공용/개인 종목 소유권 검사
-- [ ] 카탈로그 삭제는 archive, 세션 내 Exercise 제거는 해당 하위 세트 삭제
-- [ ] 루틴 변경·삭제가 기존 세션을 바꾸지 않음
-- [ ] 완료 세트만 volume에 포함; 완료 세션만 주간 웨이트 집계
+- [x] ExerciseFavorite 저장·해제, 공용/개인 종목 소유권 검사
+- [x] 카탈로그 삭제는 archive, 세션 내 Exercise 제거는 해당 하위 세트 삭제
+- [x] 루틴 변경·삭제가 기존 세션을 바꾸지 않음
+- [x] 완료 세트만 volume에 포함; 완료 세션만 주간 웨이트 집계
 - [x] Workout revision과 mutationId 계약을 API부터 적용
-- [ ] 로그인 → 운동 시작 → 80kg × 8 → 완료 → DB 저장 → 최소 Dashboard 반영 검증
+- [x] 로그인 → 운동 시작 → 80kg × 8 → 완료 → DB 저장 → 최소 Dashboard 반영 검증
 
 ---
 

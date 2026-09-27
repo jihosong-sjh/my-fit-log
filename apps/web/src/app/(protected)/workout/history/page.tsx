@@ -1,4 +1,4 @@
 import { WorkoutList } from '@/components/workout/workout-list';
 export default function Page() {
-  return <WorkoutList />;
+  return <WorkoutList history />;
 }

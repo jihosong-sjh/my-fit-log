@@ -79,3 +79,12 @@
 - `pnpm test:api` 총 15개 통과. 운동 replay/canonical 순서/동시 수정/rollback/타 사용자 ID/순서·삭제/루틴 독립성/보관 이력/러닝 pace/줄넘기 유형 검증 추가.
 - 발견·수정: native upsert의 BEFORE INSERT trigger가 보관된 기존 종목 수정도 막음. 기존 WorkoutExercise는 명시적 UPDATE로 처리해 보관 후 이력 수정 검증 통과.
 - lint/typecheck 통과. UI 연결과 브라우저 기록 흐름은 다음 작업 단위에서 완료한다.
+
+## Phase 7-B — 운동·루틴·유산소 화면 (2026-09-27)
+
+- `/workout`, `/workout/new`, `/workout/[id]`, `/workout/history`, `/routines`, `/workout/cardio/new`·상세/수정 연결.
+- 종목 검색/최근순/즐겨찾기/개인 종목 추가·보관, 이전 완료 기록과 입력값 복사, 세트 추가·복사·삭제·완료, 종목 순서, 운동 저장/완료/삭제, 루틴 생성·편집·삭제·복사.
+- 유산소 시간/거리 또는 횟수/열량/심박/메모, 수영 m→km 변환, 러닝 pace·줄넘기 이력 수정, 날짜별 이력과 최소 Dashboard 연결.
+- 격리 Chromium 3개 흐름 통과: 390px 80kg×8→세트 복사/삭제→완료→Dashboard 640kg→reload 유지, 루틴 변경 후 기존 3세트 보존, 줄넘기 500→600회 수정 및 러닝 5km/25분 pace 확인.
+- 운동 모바일 스크린샷 육안 확인, 가로 넘침 없음. 최소 Dashboard와 첫 기록 흐름 완료.
+- `pnpm lint`, `pnpm typecheck`, `pnpm build` 통과. 전체 집계·Calendar·Quick Add 반영은 Phase 10~13 체크를 남겼으며 Draft 자동 저장은 Phase 14에서 구현한다.
