@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
 import { AuthService } from './auth.service';
 import { PublicError } from '../common/errors';
+import { isAllowedOrigin } from './origin';
 export type AuthUser = { id: string; email: string; name: string };
 export type AuthRequest = Request & { user: AuthUser };
 export const Public = () => SetMetadata('public', true);
@@ -28,7 +29,11 @@ export class AuthGuard implements CanActivate {
     const req = context.switchToHttp().getRequest<AuthRequest>();
     if (
       !['GET', 'HEAD', 'OPTIONS'].includes(req.method) &&
-      req.headers.origin !== this.config.getOrThrow<string>('APP_URL')
+      !isAllowedOrigin(
+        req.headers.origin,
+        this.config.getOrThrow<string>('APP_URL'),
+        this.config.getOrThrow<string>('NODE_ENV'),
+      )
     )
       throw new PublicError('FORBIDDEN');
     if (

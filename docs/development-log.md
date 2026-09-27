@@ -184,3 +184,11 @@
 - reduced-motion에서 Skeleton 반복을 1회로 제한하고 해당 브라우저 시나리오 재검증 통과.
 - `.env.development` Git 제외 확인, 개발 포트 loopback bind, migration/테스트 DB 분리 유지.
 - 체크리스트 Phase 0~15의 미완료 체크 0개. 이후 Phase는 그대로 미완료로 유지한다.
+
+## 후속 수정 — 127.0.0.1 개발 접속과 HMR (2026-09-27)
+
+- 사용자 제보의 WebSocket 실패를 실제 Docker 로그의 `Blocked cross-origin request ... /_next/hmr from "127.0.0.1"`로 확인. 기존 검증이 localhost에만 국한되어 IP 접속을 놓쳤다.
+- Next `allowedDevOrigins`에 127.0.0.1을 명시하고 next.config.ts도 개발 컨테이너에 read-only mount하여 설정 변경이 반영되도록 했다.
+- 개발/테스트 API는 localhost↔127.0.0.1의 같은 scheme/port만 허용한다. 다른 포트·외부 host·운영 origin 검사는 기존처럼 거부한다. 자동 주소 이동은 하지 않아 기존 origin의 Draft를 유지한다.
+- API 24개 통과(운영/외부/포트·scheme 거부 회귀 포함), 격리 브라우저의 127.0.0.1 로그인→refresh→logout 및 실제 HMR WebSocket frame 수신 통과.
+- 실행 중 개발 Web 컨테이너에 설정 적용 후 `pnpm test:dev`에서 localhost와 127.0.0.1 두 페이지의 실제 소스 HMR/원복 및 Nest reload 확인. Web typecheck와 변경 파일 ESLint 통과.

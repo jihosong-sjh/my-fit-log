@@ -20,7 +20,11 @@ const apiSource = await readFile(apiPath, 'utf8');
 const browser = await chromium.launch();
 try {
   const page = await browser.newPage();
-  await page.goto('http://localhost:3000/design-system');
+  const ipPage = await browser.newPage();
+  await Promise.all([
+    page.goto('http://localhost:3000/design-system'),
+    ipPage.goto('http://127.0.0.1:3000/design-system'),
+  ]);
   assert.equal(
     (await page.request.get('http://localhost:4000/health/live')).status(),
     200,
@@ -37,10 +41,16 @@ try {
     webPath,
     webSource.replace('</main>', '<p>HMR verification marker</p></main>'),
   );
-  await waitFor(() => page.getByText('HMR verification marker').isVisible());
+  await waitFor(
+    async () =>
+      (await page.getByText('HMR verification marker').isVisible()) &&
+      (await ipPage.getByText('HMR verification marker').isVisible()),
+  );
   await writeFile(webPath, webSource);
   await waitFor(
-    async () => !(await page.getByText('HMR verification marker').isVisible()),
+    async () =>
+      !(await page.getByText('HMR verification marker').isVisible()) &&
+      !(await ipPage.getByText('HMR verification marker').isVisible()),
   );
   await writeFile(
     apiPath,
@@ -57,7 +67,7 @@ try {
       ).data.status === 'reload-verified',
   );
   console.log(
-    'PASS: Web/API/DB readiness, same-origin proxy, browser HMR and Nest watch reload',
+    'PASS: Web/API/DB readiness, same-origin proxy, localhost/127.0.0.1 browser HMR and Nest watch reload',
   );
 } finally {
   await writeFile(webPath, webSource);

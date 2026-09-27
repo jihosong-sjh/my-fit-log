@@ -59,6 +59,7 @@ services:
     ports: ['127.0.0.1:3000:3000']
     volumes:
       - ./apps/web/src:/app/apps/web/src
+      - ./apps/web/next.config.ts:/app/apps/web/next.config.ts:ro
       - ./packages/ui/src:/app/packages/ui/src
     networks: [myfit-network]
     depends_on:

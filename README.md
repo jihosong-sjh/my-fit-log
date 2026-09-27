@@ -35,7 +35,8 @@ http://localhost:3000/login 에서 생성한 계정으로 로그인합니다.
 | 개발 PostgreSQL   | localhost:5432 | myfit_dev / myfit-dev-postgres          |
 | 테스트 PostgreSQL | localhost:5433 | myfit_test / myfit-test-postgres        |
 
-개발 포트는 127.0.0.1에만 bind합니다. Web/API 소스는 bind mount하며 Next HMR / Nest watch로 반영됩니다.
+개발 포트는 127.0.0.1에만 bind합니다. 개발 브라우저 접속은 `localhost`와 `127.0.0.1`의 동일 포트를 지원합니다.
+쿠키와 IndexedDB Draft는 주소별로 분리되므로 한 주소를 계속 사용하세요. 운영 API는 지정한 APP_URL origin만 허용합니다. Web/API 소스는 bind mount하며 Next HMR / Nest watch로 반영됩니다.
 의존성·설정 변경 후 `pnpm dev:up`으로 이미지를 다시 빌드합니다.
 
 ```sh

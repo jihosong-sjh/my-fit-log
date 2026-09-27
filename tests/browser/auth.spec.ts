@@ -92,3 +92,32 @@ test('settings persist across reload and login; unset goals stay blank', async (
     page.getByLabel('주간 운동일 (1~7일)', { exact: true }),
   ).toHaveValue('4');
 });
+test('127.0.0.1 login, session refresh, logout and HMR handshake work', async ({
+  page,
+}) => {
+  const origin = new URL(process.env.E2E_BASE_URL!);
+  origin.hostname = '127.0.0.1';
+  const socketErrors: string[] = [];
+  page.on('websocket', (socket) => {
+    if (socket.url().includes('/_next/hmr'))
+      socket.on('socketerror', (error) => socketErrors.push(error));
+  });
+  const connected = page
+    .waitForEvent('websocket', {
+      predicate: (socket) => socket.url().includes('/_next/hmr'),
+    })
+    .then((socket) => socket.waitForEvent('framereceived'));
+  await page.goto(`${origin.origin}/login`);
+  await connected;
+  await page.getByLabel('이메일', { exact: true }).fill(email);
+  await page.getByLabel('비밀번호', { exact: true }).fill(password);
+  await page.getByRole('button', { name: '로그인', exact: true }).click();
+  await expect(page).toHaveURL(`${origin.origin}/dashboard`);
+  await page.reload();
+  await expect(
+    page.getByRole('heading', { name: '오늘의 기록', exact: true }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: '로그아웃', exact: true }).click();
+  await expect(page).toHaveURL(`${origin.origin}/login`);
+  expect(socketErrors).toEqual([]);
+});
