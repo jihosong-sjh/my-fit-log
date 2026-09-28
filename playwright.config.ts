@@ -18,7 +18,16 @@ export default defineConfig({
           timeout: 30000,
         },
         {
-          command: 'pnpm --filter @myfit/web dev --port 3100',
+          command:
+            process.env.E2E_PRODUCTION === '1'
+              ? 'node apps/web/.next-performance/standalone/apps/web/server.js'
+              : 'pnpm --filter @myfit/web dev --port 3100',
+          env: {
+            PORT: '3100',
+            HOSTNAME: '127.0.0.1',
+            NODE_ENV:
+              process.env.E2E_PRODUCTION === '1' ? 'production' : 'development',
+          },
           url: 'http://localhost:3100/login',
           reuseExistingServer: false,
           timeout: 60000,

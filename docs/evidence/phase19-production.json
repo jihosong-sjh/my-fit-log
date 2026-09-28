@@ -1,0 +1,74 @@
+{
+  "verifiedAt": "2026-09-27T08:28:12.757Z",
+  "project": "myfit-rehearsal-1790497615670",
+  "containers": {
+    "web": {
+      "image": "myfit-rehearsal-1790497615670-web:local",
+      "healthy": true,
+      "user": "node",
+      "ports": {
+        "3000/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "58409"
+          }
+        ]
+      },
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "10m"
+        }
+      },
+      "mounts": []
+    },
+    "api": {
+      "image": "myfit-rehearsal-1790497615670-api:local",
+      "healthy": true,
+      "user": "node",
+      "ports": {},
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "10m"
+        }
+      },
+      "mounts": []
+    },
+    "db": {
+      "image": "postgres:17.9-bookworm",
+      "healthy": true,
+      "user": "",
+      "ports": {},
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "10m"
+        }
+      },
+      "mounts": [
+        "myfit-rehearsal-1790497615670_postgres"
+      ]
+    }
+  },
+  "checks": [
+    "migration",
+    "seed",
+    "account-cli",
+    "health",
+    "proxy",
+    "secure-cookie",
+    "CSRF",
+    "no-host-api-db",
+    "no-source-or-socket-mount",
+    "non-root-apps",
+    "rotation-config",
+    "private-values-omitted",
+    "container-recreation",
+    "record-and-session-persistence"
+  ],
+  "realHttps": "not tested; Phase 24/27"
+}

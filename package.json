@@ -34,9 +34,12 @@
     "account:reset": "pnpm account:create --reset",
     "sessions:prune": "pnpm build:packages && pnpm --filter @myfit/api build && node --env-file=.env.development scripts/account.mjs --prune",
     "test:draft": "tsx --test apps/web/src/lib/draft/*.test.ts",
-    "verify": "pnpm lint && pnpm typecheck && pnpm test:unit && pnpm test:draft && pnpm test:db && pnpm test:api && pnpm test:web && pnpm build && pnpm format:check"
+    "verify": "pnpm lint && pnpm typecheck && pnpm test:unit && pnpm test:draft && pnpm test:db && pnpm test:api && pnpm test:web && pnpm build && pnpm format:check",
+    "test:performance": "pnpm build:packages && pnpm --filter @myfit/api build && E2E_PRODUCTION=1 node --env-file=.env.development scripts/test-web.mjs performance.spec.ts",
+    "test:production": "node scripts/test-production.mjs"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.11.1",
     "@eslint/js": "9.39.4",
     "@playwright/test": "1.58.2",
     "@types/node": "22.19.15",

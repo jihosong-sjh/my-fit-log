@@ -1,0 +1,105 @@
+name: ${COMPOSE_PROJECT_NAME:-myfit-prod}
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
+services:
+  db:
+    image: postgres:17.9-bookworm
+    container_name: ${COMPOSE_PROJECT_NAME:-myfit}-db-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD required}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB required}
+    command:
+      [
+        'postgres',
+        '-c',
+        'log_statement=none',
+        '-c',
+        'log_min_error_statement=panic',
+        '-c',
+        'log_parameter_max_length_on_error=0',
+        '-c',
+        'log_error_verbosity=terse',
+      ]
+    volumes: [postgres:/var/lib/postgresql/data]
+    networks: [myfit-network]
+    logging: *logging
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  api:
+    image: ${COMPOSE_PROJECT_NAME:-myfit-prod}-api:local
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME:-myfit}-api-prod
+    restart: unless-stopped
+    init: true
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL required (internal db host)}
+      APP_URL: ${APP_URL:?APP_URL required (HTTPS origin)}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET required}
+    networks: [myfit-network]
+    depends_on:
+      db: { condition: service_healthy }
+    logging: *logging
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:4000/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+  web:
+    image: ${COMPOSE_PROJECT_NAME:-myfit-prod}-web:local
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME:-myfit}-web-prod
+    restart: unless-stopped
+    init: true
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    environment:
+      NODE_ENV: production
+      INTERNAL_API_URL: http://api:4000
+      NEXT_TELEMETRY_DISABLED: 1
+    ports: ['127.0.0.1:${WEB_PORT:-3000}:3000']
+    networks: [myfit-network]
+    depends_on:
+      api: { condition: service_healthy }
+    logging: *logging
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/login').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+networks:
+  myfit-network:
+volumes:
+  postgres:

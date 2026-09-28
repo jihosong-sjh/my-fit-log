@@ -17,6 +17,8 @@ export function requestLog(req: Request, res: Response, next: NextFunction) {
   const requestId = randomUUID();
   const started = performance.now();
   res.setHeader('x-request-id', requestId);
+  // Personal records and session responses must never enter shared/browser caches.
+  res.setHeader('Cache-Control', 'no-store');
   res.once('finish', () => {
     // Deliberate allowlist: never log URL/query/body/headers/cookies or raw exceptions.
     console.log(

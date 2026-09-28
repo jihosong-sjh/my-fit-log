@@ -14,3 +14,5 @@ dist-test/
 
 dist-dev/
 .next-test/
+
+.next-performance/

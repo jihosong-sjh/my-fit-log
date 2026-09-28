@@ -11,3 +11,5 @@ apps/web/next-env.d.ts
 
 dist-dev/
 .next-test/
+
+.next-performance/

@@ -12,7 +12,7 @@
   --secondary: #e9edff;
   --secondary-foreground: #304bbb;
   --muted: #eef0f4;
-  --muted-foreground: #667085;
+  --muted-foreground: #5f697c;
   --accent: #e9edff;
   --accent-foreground: #304bbb;
   --brand: #5b7cff;
@@ -121,6 +121,10 @@
   :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 4px;
+  }
+  summary {
+    min-height: 44px;
+    align-content: center;
   }
   input[type='date'],
   input[type='month'] {

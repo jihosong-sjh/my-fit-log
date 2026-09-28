@@ -222,6 +222,70 @@ test('exercise/set reordering and removal preserves IDs and cascades only remove
     0,
   );
 });
+test('completion races accept one revision and replay the winning acknowledgement', async () => {
+  const id = randomUUID();
+  const input = payload();
+  assert.equal(
+    (await ctx.request('PUT', `/workouts/${id}`, input)).status,
+    200,
+  );
+  const mutations = ['first', 'second'].map((memo) => ({
+    ...input,
+    baseRevision: 1,
+    mutationId: randomUUID(),
+    memo,
+    status: 'COMPLETED',
+    endedAt: '2026-09-27T02:00:00Z',
+  }));
+  const results = await Promise.all(
+    mutations.map((body) => ctx.request('PUT', `/workouts/${id}`, body)),
+  );
+  assert.deepEqual(results.map((r) => r.status).sort(), [200, 409]);
+  const winner = results.findIndex((r) => r.status === 200);
+  const acknowledged = (await results[winner]!.json()).data;
+  const replay = await ctx.request('PUT', `/workouts/${id}`, mutations[winner]);
+  assert.deepEqual((await replay.json()).data, acknowledged);
+  assert.equal(acknowledged.revision, 2);
+  assert.equal(acknowledged.volume, '640');
+  assert.equal(
+    await ctx.db.workoutSet.count({
+      where: { workoutExercise: { workoutSessionId: id } },
+    }),
+    1,
+  );
+});
+test('failed routine replacement and copy preserve the original routine and create no workout', async () => {
+  const input = {
+    name: 'Rollback routine',
+    exercises: [{ exerciseId, defaultSets: 2, defaultReps: 8 }],
+  };
+  const response = await ctx.request('POST', '/routines', input);
+  const routine = (await response.json()).data;
+  const failed = await ctx.request('PUT', `/routines/${routine.id}`, {
+    ...input,
+    name: 'Must not persist',
+    exercises: [
+      ...input.exercises,
+      { exerciseId: randomUUID(), defaultSets: 1, defaultReps: 8 },
+    ],
+  });
+  assert.equal(failed.status, 404);
+  assert.deepEqual(
+    (await (await ctx.request('GET', `/routines/${routine.id}`)).json()).data,
+    routine,
+  );
+  const id = randomUUID();
+  const copy = payload();
+  copy.sourceRoutineId = routine.id;
+  copy.exercises.push({
+    ...copy.exercises[0]!,
+    id: randomUUID(),
+    exerciseId: randomUUID(),
+    sets: [{ ...copy.exercises[0]!.sets[0]!, id: randomUUID() }],
+  });
+  assert.equal((await ctx.request('PUT', `/workouts/${id}`, copy)).status, 404);
+  assert.equal(await ctx.db.workoutSession.count({ where: { id } }), 0);
+});
 test('routine CRUD, copy snapshot, favorites and archive restriction', async () => {
   await ctx.request('POST', `/exercises/${exerciseId}/favorite`);
   const favorites = (

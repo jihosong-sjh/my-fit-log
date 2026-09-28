@@ -1,7 +1,7 @@
 # MyFit Log
 
 개인 운동·식단·신체 기록 앱. Next.js / NestJS / PostgreSQL / Prisma / pnpm workspace로 구성합니다.
-현재 Phase 0~15 구현·로컬 검증을 완료했습니다. [체크리스트](<docs/MyFit Log 구현 계획 및 개발 체크리스트.md>)와 [검증 기록](docs/development-log.md)을 기준으로 진행합니다.
+현재 Phase 0~19 구현·로컬 검증을 완료했습니다. 운영 이미지 검증은 격리 리허설이며 실제 서버 배포는 후속 Phase입니다. [체크리스트](<docs/MyFit Log 구현 계획 및 개발 체크리스트.md>)와 [검증 기록](docs/development-log.md)을 기준으로 진행합니다.
 
 ## 처음 실행
 
@@ -50,7 +50,7 @@ pnpm dev
 ```
 
 `pnpm dev`는 개발 env를 읽고 Web/API를 함께 실행합니다. 별도 실행은 `pnpm dev:web`, `pnpm dev:api`입니다.
-`down -v`는 DB volume을 삭제합니다. 운영 이미지·배포·백업은 Phase 19 이후 별도 작업입니다.
+`down -v`는 DB volume을 삭제합니다. 운영 이미지는 Phase 19에서 검증했으며, 배포·백업 준비는 Phase 20–21에서 이어갑니다.
 
 ## DB와 계정 관리
 
@@ -78,7 +78,7 @@ pnpm verify
 ```
 
 `verify`는 lint → typecheck → 날짜/집계 단위 테스트 → Draft 엔진 → DB → API → 브라우저 → production build → formatting 순서로 검사합니다.
-개별 명령은 `pnpm test:unit`, `pnpm test:draft`, `pnpm test:db`, `pnpm test:api`, `pnpm test:web`입니다.
+개별 명령은 `pnpm test:unit`, `pnpm test:draft`, `pnpm test:db`, `pnpm test:api`, `pnpm test:web`입니다. `test:web`은 접근성·보안·핵심 입력·복구 흐름을 포함하며 production 성능 시험은 아래 명령으로 별도 실행합니다.
 
 DB/API/브라우저 검증은 **localhost:5433/myfit_test**만 사용합니다. 브라우저 테스트 서버 3100/4100을 자동 기동·종료하고 생성한 테스트 계정을 정리합니다.
 375/390/430/768/1024/1440px 및 테마·키보드·기록 저장·실패 복구를 검증하며 스크린샷은 `test-results`에 생성합니다.
@@ -92,6 +92,17 @@ pnpm test:api:smoke
 
 `test:dev`는 소스를 잠시 변경·복원해 실제 HMR과 Nest reload를 확인합니다.
 `test:api:smoke`는 개발 DB를 잠시 중지했다 재시작해 live/ready 분리와 복구를 검증합니다.
+
+## 로컬 성능과 운영 이미지 검증
+
+```sh
+pnpm test:performance
+pnpm test:production
+```
+
+`test:performance`는 Next production standalone 서버를 사용해 LCP·키보드 입력·저장 요청·JS 전송량을 7회 측정합니다. [측정 환경과 결과](docs/performance-baseline.md)를 참조하세요.
+
+`test:production`은 매번 별도 Compose project·DB volume·임시 비밀번호·loopback port를 만들고, image build→migration→seed→로그인/저장→컨테이너 재생성→데이터/세션 보존과 로그를 검사한 뒤 정리합니다. 실제 운영 환경변수와 DB를 사용하지 않습니다. [운영 이미지와 관리 명령](docs/production-images.md)에 구성과 범위를 정리했습니다.
 
 ## 사용 화면과 동작
 

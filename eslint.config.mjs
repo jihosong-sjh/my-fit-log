@@ -9,6 +9,7 @@ export default defineConfig([
     '**/dist-test/**',
     '**/dist-dev/**',
     '**/.next-test/**',
+    '**/.next-performance/**',
     'prisma/generated/**',
     'playwright-report/**',
     'test-results/**',

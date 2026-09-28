@@ -21,7 +21,7 @@
 
 ## 실행 기록
 
-2026-09-27: Phase 0~15 구현·로컬 검증 완료. 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
+2026-09-27: Phase 0~19 구현·로컬 검증 완료. Phase 16–19 보안·접근성·전체 회귀·production 성능·격리 운영 이미지 검증을 작업 단위별로 수행했다. 상세 증거는 [개발 작업 기록](development-log.md)을 참조한다.
 
 ## 작업 구간과 완료 상태
 
@@ -1215,32 +1215,32 @@ Workout 입력에서는 키보드만으로 대부분 기록 가능하도록 한�
 
 ### 코드·설정 보안
 
-- [ ] DB Port 외부 노출 X
-- [ ] API Port 외부 노출 X
-- [ ] Docker Socket 노출 X
-- [ ] Password Hash
-- [ ] HttpOnly Cookie
-- [ ] Secure Cookie
-- [ ] CSRF 정책 확인
-- [ ] Login Rate Limit
-- [ ] Request Validation
-- [ ] SQL Injection ORM 처리 확인
+- [x] DB Port 외부 노출 X
+- [x] API Port 외부 노출 X
+- [x] Docker Socket 노출 X
+- [x] Password Hash
+- [x] HttpOnly Cookie
+- [x] Secure Cookie
+- [x] CSRF 정책 확인
+- [x] Login Rate Limit
+- [x] Request Validation
+- [x] SQL Injection ORM 처리 확인
 
 ### 접근성
 
-- [ ] Button aria-label
-- [ ] Keyboard navigation
-- [ ] Focus state
-- [ ] Input label
-- [ ] Color contrast
-- [ ] Touch target 최소 크기
+- [x] Button aria-label
+- [x] Keyboard navigation
+- [x] Focus state
+- [x] Input label
+- [x] Color contrast
+- [x] Touch target 최소 크기
 
 ### 추가 완료 조건
 
-- [ ] Phase 5부터 구현한 인증·CSRF·rate limit·소유권 처리를 전체 도메인에서 재검증
-- [ ] 테스트 사용자 A/B로 소유권 우회·비공개 카탈로그 참조 차단
-- [ ] Draft 계정 분리·로그 비밀값 마스킹·archive 정책 검증
-- [ ] 실제 운영 포트·HTTPS 검증은 Phase 27에서 별도 수행
+- [x] Phase 5부터 구현한 인증·CSRF·rate limit·소유권 처리를 전체 도메인에서 재검증
+- [x] 테스트 사용자 A/B로 소유권 우회·비공개 카탈로그 참조 차단
+- [x] Draft 계정 분리·로그 비밀값 마스킹·archive 정책 검증
+- [x] 실제 운영 포트·HTTPS 검증은 Phase 27에서 별도 수행
 
 ---
 
@@ -1254,51 +1254,51 @@ Workout 입력에서는 키보드만으로 대부분 기록 가능하도록 한�
 
 ### Auth
 
-- [ ] Login
-- [ ] Logout
-- [ ] Unauthorized
+- [x] Login
+- [x] Logout
+- [x] Unauthorized
 
 ---
 
 ### Workout
 
-- [ ] Create
-- [ ] Read
-- [ ] Update
-- [ ] Delete
+- [x] Create
+- [x] Read
+- [x] Update
+- [x] Delete
 
 ---
 
 ### Diet
 
-- [ ] Meal CRUD
-- [ ] Food CRUD
+- [x] Meal CRUD
+- [x] Food CRUD
 
 ---
 
 ### Body
 
-- [ ] Body Record CRUD
+- [x] Body Record CRUD
 
 ---
 
 ### Dashboard
 
-- [ ] Today aggregation
+- [x] Today aggregation
 
 ---
 
 ### Analytics
 
-- [ ] 기간별 조회
+- [x] 기간별 조회
 
 ### 단위·통합 테스트
 
 ### Backend
 
-- [ ] Service Unit Test
-- [ ] Prisma Repository Test
-- [ ] API Integration Test
+- [x] Service Unit Test
+- [x] Prisma Repository Test
+- [x] API Integration Test
 
 중점 대상:
 
@@ -1316,12 +1316,12 @@ Dashboard Aggregation
 
 ### 추가 완료 조건
 
-- [ ] Settings / Goals / Routine / Favorites / Preset / Cardio / Calendar API 검증
-- [ ] 실제 PostgreSQL 테스트 DB에서 migration·FK·unique·CHECK 검증
-- [ ] session 만료·CSRF·소유권·로그인 제한 회귀 테스트
-- [ ] snapshot 불변·cascade·archive·루틴/프리셋 transaction rollback
-- [ ] 날짜 경계·미기록일·목표 미설정·Decimal 집계
-- [ ] Draft 중복 재시도·revision 충돌·완료 경합 테스트
+- [x] Settings / Goals / Routine / Favorites / Preset / Cardio / Calendar API 검증
+- [x] 실제 PostgreSQL 테스트 DB에서 migration·FK·unique·CHECK 검증
+- [x] session 만료·CSRF·소유권·로그인 제한 회귀 테스트
+- [x] snapshot 불변·cascade·archive·루틴/프리셋 transaction rollback
+- [x] 날짜 경계·미기록일·목표 미설정·Decimal 집계
+- [x] Draft 중복 재시도·revision 충돌·완료 경합 테스트
 
 ---
 
@@ -1359,7 +1359,7 @@ Bench Press 추가
 Dashboard 확인
 ```
 
-- [ ] 정상
+- [x] 정상
 
 ---
 
@@ -1385,7 +1385,7 @@ Dashboard 확인
 Nutrition Summary 확인
 ```
 
-- [ ] 정상
+- [x] 정상
 
 ---
 
@@ -1403,7 +1403,7 @@ Dashboard 반영
 Weight Chart 반영
 ```
 
-- [ ] 정상
+- [x] 정상
 
 ---
 
@@ -1421,7 +1421,7 @@ Weight Chart 반영
 Draft 복구
 ```
 
-- [ ] 정상
+- [x] 정상
 
 ### 로컬 성능
 
@@ -1440,11 +1440,11 @@ Record Save
 
 체크:
 
-- [ ] Bundle size
-- [ ] Dynamic Import
-- [ ] Chart Lazy Load
-- [ ] Query Cache
-- [ ] Database Index
+- [x] Bundle size
+- [x] Dynamic Import
+- [x] Chart Lazy Load
+- [x] Query Cache
+- [x] Database Index
 
 ### 최종 URL·Navigation
 
@@ -1474,20 +1474,20 @@ Record Save
 /settings
 ```
 
-- [ ] 전 페이지 접근
-- [ ] Navigation 연결
-- [ ] Mobile navigation 연결
+- [x] 전 페이지 접근
+- [x] Navigation 연결
+- [x] Mobile navigation 연결
 
 ### 추가 완료 조건
 
-- [ ] 목표 변경 → Dashboard 반영, 루틴 시작, 즐겨찾기·프리셋 재사용 E2E
-- [ ] 유산소 입력 → 운동일·시간·Calendar 반영 E2E
-- [ ] 러닝 30분/5km → pace 6분/km, 줄넘기 10분/1,000회 → 재조회·수정·삭제 E2E
-- [ ] 375/390/430px 모바일 viewport와 1440px desktop에서 핵심 흐름
-- [ ] API 끊김·Draft 복구·재로그인·동일 요청 재시도
-- [ ] 성능 측정은 production build 사용, 장비·데이터량·네트워크·측정 횟수 기록
-- [ ] 초기 로딩은 LCP, 저장은 요청~응답, 입력 반응은 사용자 입력~화면 갱신으로 구분
-- [ ] 에뮬레이션 결과를 실기기 통과로 표시하지 않음
+- [x] 목표 변경 → Dashboard 반영, 루틴 시작, 즐겨찾기·프리셋 재사용 E2E
+- [x] 유산소 입력 → 운동일·시간·Calendar 반영 E2E
+- [x] 러닝 30분/5km → pace 6분/km, 줄넘기 10분/1,000회 → 재조회·수정·삭제 E2E
+- [x] 375/390/430px 모바일 viewport와 1440px desktop에서 핵심 흐름
+- [x] API 끊김·Draft 복구·재로그인·동일 요청 재시도
+- [x] 성능 측정은 production build 사용, 장비·데이터량·네트워크·측정 횟수 기록
+- [x] 초기 로딩은 LCP, 저장은 요청~응답, 입력 반응은 사용자 입력~화면 갱신으로 구분
+- [x] 에뮬레이션 결과를 실기기 통과로 표시하지 않음
 
 ---
 
@@ -1499,15 +1499,15 @@ Record Save
 
 Frontend:
 
-- [ ] Multi-stage Build
-- [ ] Next.js production build
-- [ ] Dev dependency 제외
+- [x] Multi-stage Build
+- [x] Next.js production build
+- [x] Dev dependency 제외
 
 API:
 
-- [ ] Multi-stage Build
-- [ ] NestJS build
-- [ ] Prisma Client 생성
+- [x] Multi-stage Build
+- [x] NestJS build
+- [x] Prisma Client 생성
 
 ---
 
@@ -1523,11 +1523,11 @@ myfit-api-prod
 myfit-db-prod
 ```
 
-- [ ] `compose.prod.yml`
-- [ ] Restart Policy
-- [ ] Healthcheck
-- [ ] Network
-- [ ] Persistent Volume
+- [x] `compose.prod.yml`
+- [x] Restart Policy
+- [x] Healthcheck
+- [x] Network
+- [x] Persistent Volume
 
 ---
 
@@ -1539,21 +1539,21 @@ Web:
 127.0.0.1:3000
 ```
 
-- [ ] Host expose
+- [x] Host expose
 
 API:
 
-- [ ] Host Port 공개하지 않음
+- [x] Host Port 공개하지 않음
 
 DB:
 
-- [ ] Host Port 공개하지 않음
+- [x] Host Port 공개하지 않음
 
 ### Production Logging
 
-- [ ] Web Log
-- [ ] API Log
-- [ ] DB Log
+- [x] Web Log
+- [x] API Log
+- [x] DB Log
 
 Docker:
 
@@ -1573,11 +1573,11 @@ max-file
 
 ### 추가 완료 조건
 
-- [ ] production image에 실행 파일과 Prisma migration 실행 경로 포함
-- [ ] 운영 source mount 없이 build image로 실행
-- [ ] 별도 Compose project·volume·host port로 로컬 운영 이미지 검증
-- [ ] 재생성 후 DB 데이터 유지, 로그 rotation·비밀값 마스킹 확인
-- [ ] 테스트와 운영 volume 분리; 실제 운영 DB에는 접근하지 않음
+- [x] production image에 실행 파일과 Prisma migration 실행 경로 포함
+- [x] 운영 source mount 없이 build image로 실행
+- [x] 별도 Compose project·volume·host port로 로컬 운영 이미지 검증
+- [x] 재생성 후 DB 데이터 유지, 로그 rotation·비밀값 마스킹 확인
+- [x] 테스트와 운영 volume 분리; 실제 운영 DB에는 접근하지 않음
 
 ---
 

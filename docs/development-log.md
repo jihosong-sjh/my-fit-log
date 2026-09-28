@@ -192,3 +192,57 @@
 - 개발/테스트 API는 localhost↔127.0.0.1의 같은 scheme/port만 허용한다. 다른 포트·외부 host·운영 origin 검사는 기존처럼 거부한다. 자동 주소 이동은 하지 않아 기존 origin의 Draft를 유지한다.
 - API 24개 통과(운영/외부/포트·scheme 거부 회귀 포함), 격리 브라우저의 127.0.0.1 로그인→refresh→logout 및 실제 HMR WebSocket frame 수신 통과.
 - 실행 중 개발 Web 컨테이너에 설정 적용 후 `pnpm test:dev`에서 localhost와 127.0.0.1 두 페이지의 실제 소스 HMR/원복 및 Nest reload 확인. Web typecheck와 변경 파일 ESLint 통과.
+
+
+## Phase 16-A — 전체 도메인 보안 회귀 (2026-09-27)
+
+- 익명 사용자, Origin 없음/null/외부 origin, 사용자 A/B의 기록 조회·수정·삭제와 개인 운동·음식·루틴·프리셋 참조를 검증하는 API matrix 추가. ownerId/userId 주입과 SQL 구문을 포함한 검색 입력도 검증했다.
+- 모든 개인 API 응답을 `Cache-Control: no-store`로 설정. Web에 frame 차단·MIME sniff 차단·동일 origin referrer·불필요한 장치 권한 제한 헤더를 적용했다.
+- Argon2id, Secure/HttpOnly/SameSite, 세션 만료·비밀번호 재설정·secret 변경·로그인 제한은 기존 auth 회귀와 함께 재실행. Prisma raw query는 parameterized tagged template만 사용하며 Unsafe API 사용 없음.
+- `pnpm test:api` 30개 통과. 운영 이미지 리허설에서 Web loopback 공개, API/DB host port 없음, Docker socket/source mount 없음, non-root 앱 실행을 실제 inspect로 확인했다. 실제 외부 port·HTTPS 검증은 Phase 27에 남긴다.
+
+## Phase 16-B — 접근성과 터치 영역 (2026-09-27)
+
+- axe-core 4.11.1을 Playwright에 연결. 로그인과 보호 화면 12개·운동 세트 입력·종목 선택 dialog를 light/dark 390px에서 WCAG A/AA 규칙으로 검사했다.
+- 발견된 light 분석 탭의 글자 대비 실패를 수정: 반투명 글자 제거, muted foreground를 #5F697C로 조정. 공용 작은 버튼·아이콘·탭·메뉴·summary의 터치 높이를 44px로 보강했다.
+- 접근성 2개 시나리오 통과, 자동 검사 violation 0. 버튼 이름·입력 label·키보드/focus trap·Escape/복귀·skip link는 기존 foundation/UX 테스트와 함께 검증한다. 자동 검사는 실기기·스크린리더 인수를 대신하지 않으며 Phase 28에 남긴다.
+- Draft의 사용자별 IndexedDB/query key와 로그아웃 정리, API 로그 allowlist, 카탈로그 archive/snapshot 보존은 기존 회귀 테스트와 추가 matrix로 재확인했다.
+
+## Phase 17 — 단위·DB·API 통합 검증 (2026-09-27)
+
+- Backend 서비스 단위 테스트에 IP가 달라도 적용되는 계정 로그인 제한·15분 만료·cookie/잘못된 토큰 처리, 윤년 경계·6일 lookback·미기록일·체중 변화 검증을 추가했다.
+- 같은 revision의 동시 운동 완료는 하나만 성공하고 다른 요청은 409, 성공 mutation 재전송은 같은 ACK를 반환하며 세트가 중복 생성되지 않음을 검증했다.
+- 루틴의 일부 종목이 잘못된 경우 기존 루틴은 변하지 않고, 루틴 복사 도중 오류가 나면 신규 운동이 남지 않는 rollback 검증을 추가했다.
+- `pnpm test:api`: 30개 통과. Auth/Settings/Goals/Workout/Exercise/Routine/Cardio/Food/Meal/Favorites/Preset/Body/Dashboard/Analytics/Calendar, 소유권·검증·snapshot·archive·cascade·Decimal·집계 회귀 포함.
+- 실제 PostgreSQL `localhost:5433/myfit_test`에서 migration/seed와 DB repository 6개, 공통 계산 단위 4개, Draft 엔진 5개 테스트 통과. 개발/운영 데이터는 사용하지 않는다.
+
+
+## Phase 18-A — 핵심 흐름·URL·Navigation (2026-09-27)
+
+- `acceptance.spec.ts`에 375/390/430/1440px의 로그인→Bench Press 80kg×8 완료→Dashboard 640kg, 닭가슴살+밥+계란 540kcal, 체중 82.4→차트/표, 러닝 30분/5km pace 6:00, 줄넘기 10분/1000회→Calendar→1200회 수정→삭제를 추가했다.
+- 모바일 전체 메뉴와 desktop 메뉴를 실제 클릭해 Dashboard/Workout/Diet/Body/Analytics/Calendar/Settings를 순회하고 History/Routines 링크도 검증했다. 지정 URL의 직접 접근은 접근성/UX 테스트로 확인했다.
+- `pnpm verify`: lint/typecheck, 단위 4개, Draft 5개, 실제 PostgreSQL repository 6개, API/서비스 30개, 브라우저 38개, production build, formatting 모두 통과. 일반 브라우저 실행에서 production 성능 1개는 의도적으로 skip하며 별도 명령에서 수행했다.
+- 기존 목표 갱신·루틴·즐겨찾기/프리셋, 실제 persistent Chromium 종료 후 IndexedDB 복구, 401 재로그인·404·409·응답 유실 동일 요청 재전송·Draft 계정 분리 흐름도 회귀 통과했다.
+- 모바일 운동·신체 화면 스크린샷 확인. 실제 스마트폰 검증은 포함하지 않는다.
+
+## Phase 18-B — production 성능·bundle (2026-09-27)
+
+- Recharts를 별도 dynamic renderer로 분리하고 빈 데이터일 때 로드하지 않는다. Query cache와 사용자/일자 DB index를 확인했다.
+- 전용 `pnpm test:performance`: Next production **standalone** + 컴파일된 API + 격리 PostgreSQL. HTTP 측정용 API cookie/origin 설정 사용. Apple M4 Pro/24GiB/macOS arm64/Node 22.23.3/Chromium 145.0.7632.6, 신체 기록 365건, cache disabled/loopback/무 throttling, 7회 측정.
+- p95: LCP 124ms, keydown→두 번째 animation frame 15.8ms, 저장 requestStart→responseEnd 16.4ms. JS 전송량 367,341 bytes, 압축 해제 크기 1,189,281 bytes. 설정한 모든 목표 통과.
+- [측정 방법/한계](performance-baseline.md)와 [원본 JSON](evidence/phase18-performance.json) 보존. 로컬 결과를 실기기·외부망 성능으로 간주하지 않는다.
+
+## Phase 19-A — 운영 Dockerfile·Compose·로그 (2026-09-27)
+
+- Web standalone multi-stage / API Nest+Prisma build 및 production dependency deploy. Web 개발 도구 제외, API는 migration용 Prisma CLI·schema·migrations·compiled seed·계정 관리 명령 포함. 앱은 non-root `node`로 실행한다.
+- `compose.prod.yml`: Web만 127.0.0.1:3000, API/DB host port 없음, project별 network/DB volume, source/socket mount 없음, unless-stopped·healthcheck·10m×3 json-file 로그 설정.
+- API no-store/로그 allowlist, Web access log 억제, PostgreSQL statement/parameter/rejected-row 상세 로그 제한. `.env.production.example`과 [관리 명령 문서](production-images.md)를 추가했으며 실제 운영 값은 생성하거나 적용하지 않았다.
+
+## Phase 19-B — 격리 운영 이미지 리허설 (2026-09-27)
+
+- `pnpm test:production`은 임의 이름의 myfit-rehearsal project·myfit_rehearsal DB·독립 volume·비밀번호·임시 loopback port만 사용한다.
+- 실제 이미지 build→빈 DB migration→seed→stdin 계정 생성→3개 서비스 healthy→로그인/Secure cookie/CSRF/proxy→82.4kg 저장→CHECK 실패의 로그 검사→down(volume 보존)→up→DB 기록/세션 유지 통과.
+- 재생성 직후 테스트 클라이언트의 오래된 HTTP keep-alive 연결에서 ECONNRESET을 발견해 리허설 요청에 `Connection: close`를 적용했다. 새 컨테이너에 새 연결로 검증하도록 수정한 뒤 전체 리허설 통과.
+- 실행 컨테이너 inspect로 실제 port·restart·health·log rotation 옵션·volume·non-root와 source/secret/socket 미포함 확인. 로그 canary는 컨테이너 재생성 **전후** 검사하며 비밀번호·세션·개인 메모가 노출되지 않았다.
+- 생성한 컨테이너·network·volume·image·임시 env 파일 정리, 기존 개발·테스트 서비스 healthy 유지. [검증 원본](evidence/phase19-production.json) 보존.
+- Rotation은 실제 Docker 설정을 확인했으며 용량을 채우는 장시간 시험은 수행하지 않았다. Tailscale TLS/운영 장비/외부 port/실제 모바일은 Phase 23–28에서 별도 검증한다.

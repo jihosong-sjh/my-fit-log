@@ -1,0 +1,75 @@
+{
+  "measuredAt": "2026-09-27T08:25:59.764Z",
+  "node": "v22.23.3",
+  "os": "darwin arm64",
+  "cpu": "Apple M4 Pro",
+  "memoryGiB": 24,
+  "browser": "145.0.7632.6",
+  "build": "Next production / compiled Nest API",
+  "network": "loopback; browser HTTP cache disabled; no CPU/network throttling; warm servers",
+  "data": {
+    "users": 1,
+    "bodyRecords": 365,
+    "goals": "unset",
+    "workouts": 0,
+    "meals": 0
+  },
+  "samples": [
+    {
+      "lcpMs": 124,
+      "jsTransferBytes": 367341,
+      "jsDecodedBytes": 1189281,
+      "inputMs": 7.9000000059604645,
+      "saveMs": 16.444000000000003
+    },
+    {
+      "lcpMs": 80,
+      "jsTransferBytes": 367341,
+      "jsDecodedBytes": 1189281,
+      "inputMs": 15.800000011920929,
+      "saveMs": 8.148000000000001
+    },
+    {
+      "lcpMs": 80,
+      "jsTransferBytes": 367341,
+      "jsDecodedBytes": 1189281,
+      "inputMs": 14.799999982118607,
+      "saveMs": 8.918
+    },
+    {
+      "lcpMs": 84,
+      "jsTransferBytes": 367341,
+      "jsDecodedBytes": 1189281,
+      "inputMs": 8.800000011920929,
+      "saveMs": 11.361
+    },
+    {
+      "lcpMs": 84,
+      "jsTransferBytes": 367341,
+      "jsDecodedBytes": 1189281,
+      "inputMs": 12.900000005960464,
+      "saveMs": 6.1579999999999995
+    },
+    {
+      "lcpMs": 80,
+      "jsTransferBytes": 367341,
+      "jsDecodedBytes": 1189281,
+      "inputMs": 8.800000011920929,
+      "saveMs": 7.474
+    },
+    {
+      "lcpMs": 80,
+      "jsTransferBytes": 367341,
+      "jsDecodedBytes": 1189281,
+      "inputMs": 14.5,
+      "saveMs": 7.260000000000001
+    }
+  ],
+  "p95": {
+    "lcpMs": 124,
+    "inputMs": 15.800000011920929,
+    "saveMs": 16.444000000000003,
+    "jsTransferBytes": 367341,
+    "jsDecodedBytes": 1189281
+  }
+}

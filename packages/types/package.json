@@ -13,5 +13,8 @@
   },
   "dependencies": {
     "decimal.js": "10.6.0"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }
